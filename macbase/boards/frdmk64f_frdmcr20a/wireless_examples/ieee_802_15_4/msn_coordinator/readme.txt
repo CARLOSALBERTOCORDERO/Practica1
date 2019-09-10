@@ -1,4 +1,4 @@
-Overview
+Overview    
 ========
 This application represents the "802.15.4 Coordinator" of the My Star Network Demo, and it demonstrates the following:
 - channel selection algorithm
