@@ -78,6 +78,7 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.1397207158" name="Cross ARM C Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.336878990" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="../../../../../../../../rtos/freertos_8.2.3/Source/portable/GCC/ARM_CM4F"/>
+									<listOptionValue builtIn="false" value="../../../../../../../../boards/frdmk64f_frdmcr20a/wireless_examples/ieee_802_15_4/msn_coordinator/freertos/kds/encintcomm"/>
 									<listOptionValue builtIn="false" value="../../../../../../../../rtos/freertos_8.2.3/Source/include"/>
 									<listOptionValue builtIn="false" value="../../../../../../../../middleware/wireless/framework_5.0.5/Common/rtos/FreeRTOS/config"/>
 									<listOptionValue builtIn="false" value="../../../../../../../../rtos/freertos_8.2.3/Source"/>
