@@ -24,6 +24,8 @@
 #include "board.h"
 #include "fsl_os_abstraction.h"
 
+#include "C:\repository_master\Practica1\macbase\boards\frdmk64f_frdmcr20a\wireless_examples\ieee_802_15_4\msn_coordinator\freertos\kds\encintcomm\encintcomm.h"
+
 /************************************************************************************
  *************************************************************************************
  * Private macros
@@ -258,13 +260,15 @@ void AppThread(uint32_t argument)
 					/*Initialize the MAC Wrapper*/
 					LED_StopFlashingAllLeds();
 					Serial_Print(mInterfaceId,"Initializing MAC.\n\r", gAllowToBlock_d);
-					mac_init(mac_address);
+					Serial_Print(mInterfaceId,"Initializing ENCINT_COMM.\n\r", gAllowToBlock_d);
+					encrintcomm_init(mac_address);
 					Serial_Print(mInterfaceId,"Node is initialized and ready.\n\r", gAllowToBlock_d);
 					/* Goto Energy Detection state. */
 					mPanId = 0xC0C0;
 					mChannel = gLogicalChannel11_c;
 					Serial_Print(mInterfaceId,"Starting connection, this can take several seconds.\n\r", gAllowToBlock_d);
-					mac_connect(mChannel, mPanId, mac_events_handler);
+					Serial_Print(mInterfaceId,"The communication will be encripted.\n\r", gAllowToBlock_d);
+					encrintcomm_connect(mChannel, mPanId, mac_events_handler);
 					gState = waitConnectionResponse;
 				}
 			}

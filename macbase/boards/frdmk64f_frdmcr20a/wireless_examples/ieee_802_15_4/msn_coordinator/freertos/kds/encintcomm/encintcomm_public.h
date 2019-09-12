@@ -28,7 +28,7 @@
 
 /* Includes */
 /* -------- */
-
+#include "EmbeddedTypes.h"
 
 /* Exported types and constants */
 /* ---------------------------- */
@@ -70,7 +70,8 @@
 /* ---------------------------------------- */
 
 /* Functions prototypes */
-
+extern uint8_t encrintcomm_init(uint8_t* encript_addr);
+extern uint8_t encrintcomm_connect(uint8_t channel, uint16_t pan_id, void (*evt_hdlr)(void*));
 
 /* Functions macros */
 
