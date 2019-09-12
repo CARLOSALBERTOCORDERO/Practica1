@@ -36,6 +36,12 @@
 /* Types definition */
 /* typedef */
 
+typedef enum
+{
+    encintcommStateInit = 0,
+    encintcommStateReady
+}encintcommStates_en_T;
+
 
 /*==================================================*/
 /* Declaration of exported constants                */

@@ -24,7 +24,7 @@
 #include "board.h"
 #include "fsl_os_abstraction.h"
 
-#include "C:\repository_master\Practica1\macbase\boards\frdmk64f_frdmcr20a\wireless_examples\ieee_802_15_4\msn_coordinator\freertos\kds\encintcomm\encintcomm.h"
+#include "C:\SandBoxes\macwrapper_ACJ\macbase\boards\frdmk64f_frdmcr20a\wireless_examples\ieee_802_15_4\msn_coordinator\freertos\kds\encintcomm\encintcomm.h"
 
 /************************************************************************************
  *************************************************************************************

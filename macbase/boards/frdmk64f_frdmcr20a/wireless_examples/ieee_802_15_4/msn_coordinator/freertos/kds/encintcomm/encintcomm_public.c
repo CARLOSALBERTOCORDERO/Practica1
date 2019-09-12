@@ -26,7 +26,9 @@
 /* Includes */
 /* -------- */
 #include "encintcomm_public.h"
+#include "encintcomm_private.h"
 #include "ieee802p15p4_wrapper.h"
+#include "fsl_os_abstraction.h"
 
 
 /* Functions macros, constants, types and datas         */
@@ -53,7 +55,8 @@
 
 
 /* WORD RAM variables */
-
+static encintcommStates_en_T encintcommStates_en = encintcommStateInit;
+OSA_TASK_DEFINE(encintcomm_task, gMainThreadPriority_c-1, 1, gMainThreadStackSize_c, 0);
 
 /* LONG and STRUCTURE RAM variables */
 
@@ -73,27 +76,31 @@
 /* Exported functions prototypes */
 /* ----------------------------- */
 
-/* Inline functions */
-/* ---------------- */
-/**************************************************************
- *  Name                 : inline_func	2
- *  Description          :
- *  Parameters           :  [Input, Output, Input / output]
- *  Return               :
- *  Critical/explanation :    [yes / No]
- **************************************************************/
-
-
 /* Private functions */
 /* ----------------- */
 /**************************************************************
- *  Name                 : private_func
- *  Description          :
- *  Parameters           :  [Input, Output, Input / output]
- *  Return               :
- *  Critical/explanation :    [yes / No]
+ *  Name                 : encintcomm_tast
+ *  Description          : state machine of the encripting and
+ *                         integrity communication
+ *  Parameters           : [Output] argument(void*) callback arguments
+ *  Return               : void
+ *  Critical/explanation : [yes]
  **************************************************************/
-
+extern void encintcomm_task(void* argument)
+{
+    while(1)
+    {
+        switch(encintcommStates_en)
+        {
+            case encintcommStateInit:
+                break;
+            case encintcommStateReady:
+                break;
+            default:
+                break;
+        }
+    }
+}
 
 /* Exported functions */
 /* ------------------ */
@@ -111,6 +118,8 @@
  *END************************************************************************/
 extern uint8_t encrintcomm_init(uint8_t* encript_addr)
 {
+    OSA_TaskCreate(OSA_TASK(encintcomm_task), NULL);
+    encintcommStates_en = encintcommStateInit;
     (void)mac_init(encript_addr);
 }
 
