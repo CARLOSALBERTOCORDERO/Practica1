@@ -55,7 +55,7 @@
 
 
 /* WORD RAM variables */
-static encintcommStates_en_T encintcommStates_en = encintcommStateInit;
+
 OSA_TASK_DEFINE(encintcomm_task, gMainThreadPriority_c-1, 1, gMainThreadStackSize_c, 0);
 
 /* LONG and STRUCTURE RAM variables */
@@ -78,29 +78,6 @@ OSA_TASK_DEFINE(encintcomm_task, gMainThreadPriority_c-1, 1, gMainThreadStackSiz
 
 /* Private functions */
 /* ----------------- */
-/**************************************************************
- *  Name                 : encintcomm_tast
- *  Description          : state machine of the encripting and
- *                         integrity communication
- *  Parameters           : [Output] argument(void*) callback arguments
- *  Return               : void
- *  Critical/explanation : [yes]
- **************************************************************/
-extern void encintcomm_task(void* argument)
-{
-    while(1)
-    {
-        switch(encintcommStates_en)
-        {
-            case encintcommStateInit:
-                break;
-            case encintcommStateReady:
-                break;
-            default:
-                break;
-        }
-    }
-}
 
 /* Exported functions */
 /* ------------------ */
@@ -119,7 +96,7 @@ extern void encintcomm_task(void* argument)
 extern uint8_t encrintcomm_init(uint8_t* encript_addr)
 {
     OSA_TaskCreate(OSA_TASK(encintcomm_task), NULL);
-    encintcommStates_en = encintcommStateInit;
+    encintcomm_setState(encintcommStateInit);
     (void)mac_init(encript_addr);
 }
 
