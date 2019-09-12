@@ -5,9 +5,13 @@
  *      Author: CARLOS_CORDERO
  */
 
-#include "fsl_os_abstraction.h"
+
 #include "encintcomm_private.h"
 
+
+#define gencintcommEvtDummyEvent_c             (1 << 0)
+
+static osaEventId_t mEncintcommEvent = NULL;
 
 static encintcommStates_en_T encintcommStates_en = encintcommStateInit;
 
@@ -21,13 +25,19 @@ static encintcommStates_en_T encintcommStates_en = encintcommStateInit;
  **************************************************************/
 extern void encintcomm_task(void* argument)
 {
+    osaEventFlags_t ev;
     while(1)
     {
+        OSA_EventWait(mEncintcommEvent, osaEventFlagsAll_c, FALSE, osaWaitForever_c, &ev);
+
         switch(encintcommStates_en)
         {
             case encintcommStateInit:
+                encintcommStates_en = encintcommStateReady;
+                OSA_EventSet(mEncintcommEvent, gencintcommEvtDummyEvent_c);
                 break;
             case encintcommStateReady:
+                encintcommStates_en = encintcommStateReady;
                 break;
             default:
                 break;
@@ -38,4 +48,9 @@ extern void encintcomm_task(void* argument)
 extern void encintcomm_setState(const encintcommStates_en_T inencintcommStates)
 {
     encintcommStates_en = inencintcommStates;
+}
+
+extern void encrintcomm_getEvent(osaEventId_t encintcommEvent)
+{
+    encintcommEvent = mEncintcommEvent;
 }

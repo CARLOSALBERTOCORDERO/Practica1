@@ -7,6 +7,7 @@
 
 #ifndef ENCINTCOMM_ENCINTCOMM_PRIVATE_H_
 #define ENCINTCOMM_ENCINTCOMM_PRIVATE_H_
+#include "fsl_os_abstraction.h"
 
 typedef enum
 {
@@ -16,6 +17,7 @@ typedef enum
 
 extern void encintcomm_task(void* argument);
 extern void encintcomm_setState(const encintcommStates_en_T inencintcommStates);
+extern void encrintcomm_getEvent(osaEventId_t encintcommEvent);
 
 
 #endif /* ENCINTCOMM_ENCINTCOMM_PRIVATE_H_ */

@@ -55,7 +55,7 @@
 
 
 /* WORD RAM variables */
-
+static osaEventId_t mEncintcommEventPlaceHolder = NULL;
 OSA_TASK_DEFINE(encintcomm_task, gMainThreadPriority_c-1, 1, gMainThreadStackSize_c, 0);
 
 /* LONG and STRUCTURE RAM variables */
@@ -95,8 +95,10 @@ OSA_TASK_DEFINE(encintcomm_task, gMainThreadPriority_c-1, 1, gMainThreadStackSiz
  *END************************************************************************/
 extern uint8_t encrintcomm_init(uint8_t* encript_addr)
 {
-    OSA_TaskCreate(OSA_TASK(encintcomm_task), NULL);
-    encintcomm_setState(encintcommStateInit);
+    //encrintcomm_getEvent(mEncintcommEventPlaceHolder);
+    //mEncintcommEventPlaceHolder = OSA_EventCreate(TRUE);
+    //encintcomm_setState(encintcommStateInit);
+    //OSA_TaskCreate(OSA_TASK(encintcomm_task), NULL);
     (void)mac_init(encript_addr);
 }
 
@@ -121,4 +123,6 @@ extern uint8_t encrintcomm_connect(uint8_t channel, uint16_t pan_id, void (*evt_
 {
     mac_connect(channel, pan_id, evt_hdlr);
 }
+
+
 
