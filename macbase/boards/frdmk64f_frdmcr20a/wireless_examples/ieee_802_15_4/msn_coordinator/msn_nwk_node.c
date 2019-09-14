@@ -240,7 +240,6 @@ void AppThread(uint32_t argument)
 	osaEventFlags_t ev;
 	/* Stores the error/success code returned by some functions. */
     static uint8_t mCounter = 0;
-    static maCommDataBufferHolder[64] = {0};
 
 	while(1)
 	{
@@ -313,12 +312,7 @@ void AppThread(uint32_t argument)
 				}
 
 				if((mCounter >= 64) || (received_byte == '\r')){
-				    uint16_t index = 0;
 				    uint32_t result = 0;
-				    for(index = 0; index < 64; index++)
-				    {
-				        maCommDataBufferHolder[index]= maCommDataBuffer[index];
-				    }
 				    App_CRC(&maCommDataBuffer[0], 64, &result);
 					mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
 					FLib_MemSet(maCommDataBuffer, 0, 64);
@@ -373,13 +367,18 @@ void AppThread(uint32_t argument)
 
 static uint16_t App_CRC(uint8_t * inputArray, uint8_t arrayLength, uint32_t * result)
 {
-    const uint8_t gCRCPolym_u16 = 0x83u;
+    const uint8_t gCRCPolym_u8 = 0x07u;
     const uint8_t rZerosExtention = 8u;
     uint8_t index = 0;
     uint8_t charStartIndex = 0u;
-    uint8_t zerosExtendedArray[66] = {0};
-    uint8_t indexExtended = 2u;
-
+    uint8_t zerosExtendedArray[65] = {0};
+    uint16_t indexExtended = 1u;
+    uint16_t bitFindData = 0u;
+    uint16_t bitFindDataShifted = 0u;
+    uint8_t shiftCounter = 0;
+    uint8_t resultCRC = 0;
+    bool_t algorithEnd = FALSE;
+    /* Add zeros to the message */
     for(index = 0; index < arrayLength; index++)
     {
         zerosExtendedArray[indexExtended] = inputArray[index];
@@ -387,16 +386,41 @@ static uint16_t App_CRC(uint8_t * inputArray, uint8_t arrayLength, uint32_t * re
 
     }
     /*Start at the extended array end value*/
+    /* Construct M& r'zeros*/
     index = sizeof(zerosExtendedArray)/sizeof(uint8_t);
     index--;
     charStartIndex = index;
-    /* Construct M& r'zeros*/
+    /*Find first byte with data */
     while((index > 0) && (0 == zerosExtendedArray[index]))
     {
         index--;
         charStartIndex = index;
     }
-    index = 0;
+    /*Apply CRC algorithm*/
+    indexExtended = zerosExtendedArray[charStartIndex];
+    while(8 > shiftCounter)
+    {
+        bitFindDataShifted = 0;
+        /*Find first bit in 1*/
+        while((0u == bitFindDataShifted) && (8 > shiftCounter))
+        {
+            indexExtended <<= 1;
+            bitFindDataShifted = indexExtended & 0x100u;
+            shiftCounter++;
+            if(8 <= shiftCounter)
+            {
+                algorithEnd = TRUE;
+            }
+        }
+        if(FALSE == algorithEnd)
+        {
+            /*Clean MSB*/
+            indexExtended = indexExtended & 0xFFu;
+            resultCRC = indexExtended ^ gCRCPolym_u8;
+            indexExtended = resultCRC;
+        }
+    }
+    *result = indexExtended;
 }
 
 /************************************************************************************
