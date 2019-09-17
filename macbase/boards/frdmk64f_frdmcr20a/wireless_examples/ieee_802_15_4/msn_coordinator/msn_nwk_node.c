@@ -33,11 +33,14 @@ enum
 {
 	stateInit,
 	waitConnectionResponse,
-	stateConnected
+	stateConnected,
+	stateConnected2
 };
 
 #define mDefaultValueOfDataLen_c               20
 #define gMessageMarkCR_c   0x0D
+
+
 
 /* Events */
 #define gAppEvtDummyEvent_c             (1 << 0)
@@ -67,6 +70,31 @@ static void    App_HandleKeys(key_event_t events);
 
 void App_init( void );
 void AppThread (uint32_t argument);
+
+/*******************************************************************************
+ * other Prototypes JLGG
+ ******************************************************************************/
+/*!
+ * @brief delay a while.
+ */
+void delay(void);
+
+/*******************************************************************************
+ * Variables
+ ******************************************************************************/
+
+/*******************************************************************************
+ * Code JLGG
+ ******************************************************************************/
+void delay(void)
+{
+    volatile uint32_t i = 0;
+    for (i = 0; i < 999999; ++i)
+    {
+        __asm("NOP"); /* delay */
+    }
+}
+
 
 /************************************************************************************
  *************************************************************************************
@@ -236,7 +264,7 @@ void AppThread(uint32_t argument)
 { 
 	osaEventFlags_t ev;
 	/* Stores the error/success code returned by some functions. */
-    static uint8_t mCounter = 0;
+    static uint16_t mCounter = 0;
 
 	while(1)
 	{
@@ -245,23 +273,30 @@ void AppThread(uint32_t argument)
 		switch(gState)
 		{
 		case stateInit:
-			if(ev & gAppEvtButton_c){
-				if(button_event == gKBD_EventSW3_c) {
+			if(ev & gAppEvtButton_c)
+			{
+				if(button_event == gKBD_EventSW3_c)            /* SW1 */
+				{
 					Serial_Print(mInterfaceId,"MAC address: ", gAllowToBlock_d);
-					for(int i = 0; i<8; i++) {
+					for(int i = 0; i<8; i++)
+					{
 						mac_address[i]++;
 						Serial_PrintHex(mInterfaceId,(uint8_t*)&mac_address[i], 1, 0);
 					}
 					Serial_Print(mInterfaceId,"\r\n", gAllowToBlock_d);
 				}
-				if(button_event == gKBD_EventSW4_c) {
+				if(button_event == gKBD_EventSW4_c)             /* SW2 */
+				{
 					/*Initialize the MAC Wrapper*/
 					LED_StopFlashingAllLeds();
+					LED_TurnOnLed(2); /* RX/TX READY */
+
+
 					Serial_Print(mInterfaceId,"Initializing MAC.\n\r", gAllowToBlock_d);
 					mac_init(mac_address);
 					Serial_Print(mInterfaceId,"Node is initialized and ready.\n\r", gAllowToBlock_d);
 					/* Goto Energy Detection state. */
-					mPanId = 0xC0C0;
+					mPanId = 0xC0CA;
 					mChannel = gLogicalChannel11_c;
 					Serial_Print(mInterfaceId,"Starting connection, this can take several seconds.\n\r", gAllowToBlock_d);
 					mac_connect(mChannel, mPanId, mac_events_handler);
@@ -274,12 +309,15 @@ void AppThread(uint32_t argument)
 
 		case waitConnectionResponse:
 			/* Handle connection response */
-			if(node_connected){
+			if(node_connected)
+			{
 				Serial_Print(mInterfaceId," Node Connected as ", gAllowToBlock_d);
-				if(node_is_coordinator){
+				if(node_is_coordinator)
+				{
 					Serial_Print(mInterfaceId,"Coordinator with short address: ", gAllowToBlock_d);
 				}
-				else {
+				else
+				{
 					Serial_Print(mInterfaceId,"End device with short address: ", gAllowToBlock_d);
 				}
 				Serial_PrintHex(mInterfaceId,(uint8_t*)&mShortAddress, 2, 0);
@@ -291,45 +329,60 @@ void AppThread(uint32_t argument)
 
 				gState = stateConnected;
 				OSA_EventSet(mAppEvent, gAppEvtDummyEvent_c);
+				LED_TurnOnLed(2); /* RX/TX READY */
 			}
 
 			break;
 
 		case stateConnected:
-			/* Handle events from the UART */
-			if (ev & gAppEvtRxFromComm_c)
+			/* Handle events from KEYBOARD to UART */
+			/*if (ev & gAppEvtRxFromComm_c)
 			{
 				uint16_t count;
 				unsigned char received_byte = 0;
 				(void)Serial_GetByteFromRxBuffer(mInterfaceId, &received_byte, &count);
-				if((received_byte >= ' ') && (received_byte <= '~')) {
+				if((received_byte >= ' ') && (received_byte <= '~'))
+					{
 					maCommDataBuffer[mCounter++] = received_byte;
-				}
+					}
 
-				if((mCounter >= 64) || (received_byte == '\r')){
+				 if((mCounter >= 64) || (received_byte == '\r'))
+					{
 					mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
 					FLib_MemSet(maCommDataBuffer, 0, 64);
 					mCounter = 0;
-				}
-			}
+					}
+				} */
 
 			/* Handle MAC management events */
-			if(ev & gAppEvtMacManagement_c){
+			if(ev & gAppEvtMacManagement_c)
+			{
 				Serial_Print(mInterfaceId,"Network management event: ", gAllowToBlock_d);
 				Serial_PrintHex(mInterfaceId,(uint8_t*)&mlme_event, 4, 0);
 				Serial_Print(mInterfaceId,"\r\n", gAllowToBlock_d);
 			}
 
 			/* Handle MAC data events */
-			if(ev & gAppEvtMacData_c){
-				if(received_data_len){
+			if(ev & gAppEvtMacData_c)
+			{
+				if(received_data_len)
+				{
+					LED_TurnOffLed(2); /* RX/TX READY */
+					LED_TurnOnLed(4); /* RECIEVE ANSWER */
 					Serial_Print(mInterfaceId,"Message from ", gAllowToBlock_d);
 					Serial_PrintHex(mInterfaceId,(uint8_t*)&received_data_src, 2, 0);
 					Serial_Print(mInterfaceId," : ", gAllowToBlock_d);
 					Serial_Print(mInterfaceId, received_data, gAllowToBlock_d);
 					Serial_Print(mInterfaceId,"\r\n", gAllowToBlock_d);
+					delay();
+					delay();
+					delay();
+					delay();
+					LED_TurnOffLed(4); /* RECIEVE ANSWER */
+					LED_TurnOnLed(2); /* RX/TX READY */
 				}
-				else {
+				else
+				{
 					Serial_Print(mInterfaceId,"Network data event: ", gAllowToBlock_d);
 					Serial_PrintHex(mInterfaceId,(uint8_t*)&mcps_event, 4, 0);
 					Serial_Print(mInterfaceId,"\r\n", gAllowToBlock_d);
@@ -338,21 +391,211 @@ void AppThread(uint32_t argument)
 			}
 
 			/* Handle button events */
-			if(ev & gAppEvtButton_c){
-				if(button_event == gKBD_EventSW3_c) {
+			if(ev & gAppEvtButton_c)
+			{
+				if(button_event == gKBD_EventSW3_c)     /* SW2 DESTINATION  */
+				{
 					Serial_Print(mInterfaceId,"Destination address: ", gAllowToBlock_d);
 					mDestinationAddress++;
 					Serial_PrintHex(mInterfaceId,(uint8_t*)&mDestinationAddress, 2, 0);
 					Serial_Print(mInterfaceId,"\r\n", gAllowToBlock_d);
+				}/* Handle events from the MESSAGE CENTER*/
+				if(button_event == gKBD_EventSW4_c)    /* SW1 TRANSMITE MENSAJE TEXTO 1 */
+				{
+						LED_TurnOnLed(3); /* ON TRANSMIT YELLOW */
+						delay();
+						delay();
+						delay();
+						delay();
+						delay();
+						delay();
+						delay();
+						delay();
+						delay();
+						delay();
+						bool_t result = TRUE ;
+						uint8_t TextArray[] = {"VIAJA 299,792 KM/SEG"};
+						uint16_t received_byte_leght = 0;
+						uint8_t * Array_to_send;
+						Array_to_send = 0;
+						uint8_t j = 0;
+						received_byte_leght = sizeof(TextArray);
+						for ( j = 0 ; j < received_byte_leght;)
+						{
+						Array_to_send = &TextArray[j];
+						maCommDataBuffer[mCounter++]  = *Array_to_send;
+						if ( mCounter >= 64)
+							{
+							mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+							goto next;
+							}
+						j++;
+						}
+						mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+						next:
+						LED_TurnOffLed(1);   /* FROM YELLOW , OFF COLOUR RED = ONLY GREEN LED */
+						delay();
+						delay();
+						delay();
+						delay();
+						delay();
+						delay();
+						delay();
+						delay();
+						delay();
+						delay();
+						/*aqui llamamos a la funcion que nos regresa EL result fue psotivo o negativo */
+						/* app func crc confirm */
+						if (result == FALSE )
+						{
+							mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+							LED_TurnOffLed(2);   /*STATUS READY TX/RX  GREEN */
+							LED_TurnOnLed(1);   /* TX FAIL RED */
+							delay();
+							delay();
+							delay();
+							delay();
+							delay();
+							delay();
+							delay();
+							delay();
+							delay();
+							delay();
+							delay();
+							/*aqui llamamos a la funcion que nos regresa EL result fue pOsitivo o negativo */
+							/* app func crc confirm */
+							if (result == FALSE )
+							{
+								mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+								LED_TurnOffLed(1);   /* TX FAIL RED */
+								LED_TurnOnLed(4);   /* blue */
+								delay();
+								delay();
+								delay();
+								delay();
+								delay();
+								delay();
+								delay();
+								delay();
+								delay();
+								delay();
+								delay();
+							}
+							LED_TurnOffLed(4);   /*  TX FAIL RED */
+							LED_TurnOnLed(2);   /*STATUS READY TX/RX  GREEN */
+						}
+						FLib_MemSet(maCommDataBuffer, 0, 64);
+						mCounter = 0;
+
+						gState = stateConnected2;
+						OSA_EventSet(mAppEvent, gAppEvtDummyEvent_c);
+						LED_TurnOnLed(2); /* RX/TX READY */
 				}
-				if(button_event == gKBD_EventSW4_c) {
-					Serial_Print(mInterfaceId,"Destination address: ", gAllowToBlock_d);
-					mDestinationAddress--;
-					Serial_PrintHex(mInterfaceId,(uint8_t*)&mDestinationAddress, 2, 0);
-					Serial_Print(mInterfaceId,"\r\n", gAllowToBlock_d);
-				}
+
+
 			}
+
 			break;
+
+		case stateConnected2:
+
+			if(ev & gAppEvtButton_c)
+			{
+				if(button_event == gKBD_EventSW4_c)    /* SW1 TRANSMITE MENSAJE TEXTO 2 */
+				{
+						LED_TurnOnLed(3); /* ON TRANSMIT YELLOW */
+						delay();
+						delay();
+						delay();
+						delay();
+						delay();
+						delay();
+						delay();
+						delay();
+						delay();
+						delay();
+						bool_t result = FALSE ;
+						uint8_t TextArray[] = {"NETA FUNCIONA, QUIEN LLEGARA PRIMERO A MARTE LA NASA O SPACEX? EL PRIMERO SIN DUDA SERA EL MEJOR MAS MONEY"};
+						uint16_t received_byte_leght = 0;
+						uint8_t * Array_to_send;
+						Array_to_send = 0;
+						uint8_t j = 0;
+						received_byte_leght = sizeof(TextArray);
+						for ( j = 0 ; j < received_byte_leght;)
+						{
+						Array_to_send = &TextArray[j];
+						maCommDataBuffer[mCounter++]  = *Array_to_send;
+						if ( mCounter >= 64)
+							{
+							mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+							goto next1;
+							}
+						j++;
+						}
+						mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+						next1:
+						LED_TurnOffLed(1);   /* FROM YELLOW , OFF COLOUR RED = ONLY GREEN LED */
+						delay();
+						delay();
+						delay();
+						delay();
+						delay();
+						delay();
+						delay();
+						delay();
+						delay();
+						delay();
+						delay();
+						/*aqui llamamos a la funcion que nos regresa EL result fue psotivo o negativo */
+						/* app func crc confirm */
+						if (result == FALSE )
+						{
+							mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+							LED_TurnOffLed(2);   /*STATUS READY TX/RX  GREEN */
+							LED_TurnOnLed(1);   /* TX FAIL RED */
+							delay();
+							delay();
+							delay();
+							delay();
+							delay();
+							delay();
+							delay();
+							delay();
+							delay();
+							delay();
+							delay();
+							/*aqui llamamos a la funcion que nos regresa EL result fue pOsitivo o negativo */
+							/* app func crc confirm */
+							if (result == FALSE )
+							{
+								mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+								LED_TurnOffLed(1);   /* TX FAIL RED */
+								LED_TurnOnLed(4);   /* blue */
+								delay();
+								delay();
+								delay();
+								delay();
+								delay();
+								delay();
+								delay();
+								delay();
+								delay();
+								delay();
+								delay();
+							}
+							LED_TurnOffLed(4);   /*  TX FAIL RED */
+							LED_TurnOnLed(2);   /*STATUS READY TX/RX  GREEN */
+						}
+						FLib_MemSet(maCommDataBuffer, 0, 64);
+						mCounter = 0;
+
+				}
+
+
+
+			}
+
+			 break;
 		} /* end switch*/
 
 	}
