@@ -66,7 +66,6 @@ enum
  ************************************************************************************/
 static void    App_CommRxCallBack(void*);
 static void    App_HandleKeys(key_event_t events);
-static uint16_t App_CRC(uint8_t * inputArray, uint8_t arrayLength, uint32_t * result);
 
 void App_init( void );
 void AppThread (uint32_t argument);
@@ -240,7 +239,6 @@ void AppThread(uint32_t argument)
 	osaEventFlags_t ev;
 	/* Stores the error/success code returned by some functions. */
     static uint8_t mCounter = 0;
-    static maCommDataBufferHolder[64] = {0};
 
 	while(1)
 	{
@@ -313,13 +311,6 @@ void AppThread(uint32_t argument)
 				}
 
 				if((mCounter >= 64) || (received_byte == '\r')){
-				    uint16_t index = 0;
-				    uint32_t result = 0;
-				    for(index = 0; index < 64; index++)
-				    {
-				        maCommDataBufferHolder[index]= maCommDataBuffer[index];
-				    }
-				    App_CRC(&maCommDataBuffer[0], 64, &result);
 					mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
 					FLib_MemSet(maCommDataBuffer, 0, 64);
 					mCounter = 0;
@@ -369,34 +360,6 @@ void AppThread(uint32_t argument)
 		} /* end switch*/
 
 	}
-}
-
-static uint16_t App_CRC(uint8_t * inputArray, uint8_t arrayLength, uint32_t * result)
-{
-    const uint8_t gCRCPolym_u16 = 0x83u;
-    const uint8_t rZerosExtention = 8u;
-    uint8_t index = 0;
-    uint8_t charStartIndex = 0u;
-    uint8_t zerosExtendedArray[66] = {0};
-    uint8_t indexExtended = 2u;
-
-    for(index = 0; index < arrayLength; index++)
-    {
-        zerosExtendedArray[indexExtended] = inputArray[index];
-        indexExtended++;
-
-    }
-    /*Start at the extended array end value*/
-    index = sizeof(zerosExtendedArray)/sizeof(uint8_t);
-    index--;
-    charStartIndex = index;
-    /* Construct M& r'zeros*/
-    while((index > 0) && (0 == zerosExtendedArray[index]))
-    {
-        index--;
-        charStartIndex = index;
-    }
-    index = 0;
 }
 
 /************************************************************************************
