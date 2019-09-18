@@ -24,7 +24,7 @@
 #include "board.h"
 #include "fsl_os_abstraction.h"
 
-#include "C:\SandBoxes\macwrapper_ACJ\macbase\boards\frdmk64f_frdmcr20a\wireless_examples\ieee_802_15_4\msn_coordinator\freertos\kds\encintcomm\encintcomm.h"
+#include "C:\repository_master\Practica1\macbase\boards\frdmk64f_frdmcr20a\wireless_examples\ieee_802_15_4\msn_coordinator\freertos\kds\encintcomm\encintcomm.h"
 
 /************************************************************************************
  *************************************************************************************
@@ -370,12 +370,15 @@ static uint16_t App_CRC(uint8_t * inputArray, uint8_t arrayLength, uint32_t * re
     const uint8_t gCRCPolym_u8 = 0x07u;
     const uint8_t rZerosExtention = 8u;
     uint8_t index = 0;
+    uint8_t auxIndex = 0;
     uint8_t charStartIndex = 0u;
     uint8_t zerosExtendedArray[65] = {0};
     uint16_t indexExtended = 1u;
+    int16_t shiftLeftAux = 0u;
     uint16_t bitFindData = 0u;
     uint16_t bitFindDataShifted = 0u;
     uint8_t shiftCounter = 0;
+    uint8_t shiftCounterLimit = 0;
     uint8_t resultCRC = 0;
     bool_t algorithEnd = FALSE;
     /* Add zeros to the message */
@@ -396,31 +399,48 @@ static uint16_t App_CRC(uint8_t * inputArray, uint8_t arrayLength, uint32_t * re
         index--;
         charStartIndex = index;
     }
+    /*Get the maximum number of shiftings*/
+    shiftCounterLimit = charStartIndex * 8;
     /*Apply CRC algorithm*/
     indexExtended = zerosExtendedArray[charStartIndex];
-    while(8 > shiftCounter)
+    while(shiftCounterLimit > shiftCounter)
     {
         bitFindDataShifted = 0;
         /*Find first bit in 1*/
-        while((0u == bitFindDataShifted) && (8 > shiftCounter))
+        while((0u == bitFindDataShifted) && (shiftCounterLimit > shiftCounter))
         {
-            indexExtended <<= 1;
+            indexExtended = zerosExtendedArray[charStartIndex] << 1;
             bitFindDataShifted = indexExtended & 0x100u;
             shiftCounter++;
-            if(8 <= shiftCounter)
+            if(shiftCounterLimit < shiftCounter)
             {
                 algorithEnd = TRUE;
+            }
+            if(FALSE == algorithEnd)
+            {
+                /*shift left all the array */
+                for(index = charStartIndex; index > 0; index --)
+                {
+                    zerosExtendedArray[index] <<= 1;
+                    auxIndex = index - 1;
+                    shiftLeftAux = zerosExtendedArray[auxIndex] << 1;
+                    shiftLeftAux &= 0x100;
+                    if(0 != shiftLeftAux)
+                    {
+                        zerosExtendedArray[index] |= 0x1;
+                    }
+                }
             }
         }
         if(FALSE == algorithEnd)
         {
             /*Clean MSB*/
-            indexExtended = indexExtended & 0xFFu;
+            indexExtended = zerosExtendedArray[charStartIndex];
             resultCRC = indexExtended ^ gCRCPolym_u8;
-            indexExtended = resultCRC;
+            zerosExtendedArray[charStartIndex] = resultCRC;
         }
     }
-    *result = indexExtended;
+    *result = zerosExtendedArray[charStartIndex];
 }
 
 /************************************************************************************
