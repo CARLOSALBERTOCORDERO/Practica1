@@ -24,7 +24,7 @@
 #include "board.h"
 #include "fsl_os_abstraction.h"
 
-#include "encintcomm.h"
+#include "C:\SandBoxes\macwrapper_ACJ\macbase\boards\frdmk64f_frdmcr20a\wireless_examples\ieee_802_15_4\msn_coordinator\freertos\kds\encintcomm\encintcomm.h"
 
 /************************************************************************************
  *************************************************************************************
@@ -235,7 +235,7 @@ void mac_events_handler(void* evt_par)
  *     None
  *****************************************************************************/
 void AppThread(uint32_t argument)
-{
+{ 
 	osaEventFlags_t ev;
 	/* Stores the error/success code returned by some functions. */
     static uint8_t mCounter = 0;
@@ -374,7 +374,7 @@ void AppThread(uint32_t argument)
  * This callback is triggered when a new byte is received over the serial terminal interface
  *
  *****************************************************************************/
-static void App_CommRxCallBack(void *pData)
+static void App_CommRxCallBack(void *pData) 
 {
 	uint8_t pressedKey;
 	uint16_t count;
