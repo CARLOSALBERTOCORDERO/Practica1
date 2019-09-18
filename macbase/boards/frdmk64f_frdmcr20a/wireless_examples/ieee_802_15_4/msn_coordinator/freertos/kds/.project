@@ -452,11 +452,6 @@
 			<locationURI>PARENT-2-PROJECT_LOC/ieee802p15p4_wrapper_cfg.h</locationURI>
 		</link>
 		<link>
-			<name>source/msn_nwk_node.c</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/msn_nwk_node.c</locationURI>
-		</link>
-		<link>
 			<name>startup/startup_MK64F12.S</name>
 			<type>1</type>
 			<locationURI>PARENT-7-PROJECT_LOC/devices/MK64F12/gcc/startup_MK64F12.S</locationURI>
