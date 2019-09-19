@@ -24,7 +24,7 @@
 #include "board.h"
 #include "fsl_os_abstraction.h"
 
-#include "C:\repository_master\Practica1\macbase\boards\frdmk64f_frdmcr20a\wireless_examples\ieee_802_15_4\msn_coordinator\freertos\kds\encintcomm\encintcomm.h"
+#include "C:\SandBoxes\macwrapper_ACJ\macbase\boards\frdmk64f_frdmcr20a\wireless_examples\ieee_802_15_4\msn_coordinator\freertos\kds\encintcomm\encintcomm.h"
 
 /************************************************************************************
  *************************************************************************************
@@ -378,7 +378,7 @@ static uint16_t App_CRC(uint8_t * inputArray, uint8_t arrayLength, uint32_t * re
     uint16_t bitFindData = 0u;
     uint16_t bitFindDataShifted = 0u;
     uint8_t shiftCounter = 0;
-    uint8_t shiftCounterLimit = 0;
+    uint16_t shiftCounterLimit = 0;
     uint8_t resultCRC = 0;
     bool_t algorithEnd = FALSE;
     /* Add zeros to the message */
@@ -412,27 +412,24 @@ static uint16_t App_CRC(uint8_t * inputArray, uint8_t arrayLength, uint32_t * re
             indexExtended = zerosExtendedArray[charStartIndex] << 1;
             bitFindDataShifted = indexExtended & 0x100u;
             shiftCounter++;
-            if(shiftCounterLimit < shiftCounter)
+            if(shiftCounterLimit <= shiftCounter)
             {
                 algorithEnd = TRUE;
             }
-            if(FALSE == algorithEnd)
+            /*shift left all the array */
+            for(index = charStartIndex; index > 0; index --)
             {
-                /*shift left all the array */
-                for(index = charStartIndex; index > 0; index --)
+                zerosExtendedArray[index] <<= 1;
+                auxIndex = index - 1;
+                shiftLeftAux = zerosExtendedArray[auxIndex] << 1;
+                shiftLeftAux &= 0x100;
+                if(0 != shiftLeftAux)
                 {
-                    zerosExtendedArray[index] <<= 1;
-                    auxIndex = index - 1;
-                    shiftLeftAux = zerosExtendedArray[auxIndex] << 1;
-                    shiftLeftAux &= 0x100;
-                    if(0 != shiftLeftAux)
-                    {
-                        zerosExtendedArray[index] |= 0x1;
-                    }
+                    zerosExtendedArray[index] |= 0x1;
                 }
             }
         }
-        if(FALSE == algorithEnd)
+        if((FALSE == algorithEnd) || ((TRUE == algorithEnd) && (0 != bitFindDataShifted)))
         {
             /*Clean MSB*/
             indexExtended = zerosExtendedArray[charStartIndex];
