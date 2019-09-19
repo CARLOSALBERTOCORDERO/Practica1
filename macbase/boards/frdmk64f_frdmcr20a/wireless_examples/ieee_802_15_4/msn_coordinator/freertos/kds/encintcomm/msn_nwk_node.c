@@ -239,7 +239,6 @@ void AppThread(uint32_t argument)
 	osaEventFlags_t ev;
 	/* Stores the error/success code returned by some functions. */
     static uint8_t mCounter = 0;
-
 	while(1)
 	{
 		OSA_EventWait(mAppEvent, osaEventFlagsAll_c, FALSE, osaWaitForever_c, &ev);
@@ -257,7 +256,9 @@ void AppThread(uint32_t argument)
 					Serial_Print(mInterfaceId,"\r\n", gAllowToBlock_d);
 				}
 				if(button_event == gKBD_EventSW4_c) {
+
 					/*Initialize the MAC Wrapper*/
+				    encripCtx_init();
 					LED_StopFlashingAllLeds();
 					Serial_Print(mInterfaceId,"Initializing MAC.\n\r", gAllowToBlock_d);
 					Serial_Print(mInterfaceId,"Initializing ENCINT_COMM.\n\r", gAllowToBlock_d);
@@ -311,7 +312,7 @@ void AppThread(uint32_t argument)
 				}
 
 				if((mCounter >= 64) || (received_byte == '\r')){
-					mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+				    encrintcomm_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
 					FLib_MemSet(maCommDataBuffer, 0, 64);
 					mCounter = 0;
 				}

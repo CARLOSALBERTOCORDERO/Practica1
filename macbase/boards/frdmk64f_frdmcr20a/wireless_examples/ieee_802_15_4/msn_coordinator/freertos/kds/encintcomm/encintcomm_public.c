@@ -29,7 +29,7 @@
 #include "encintcomm_private.h"
 #include "ieee802p15p4_wrapper.h"
 #include "fsl_os_abstraction.h"
-
+#include "aes.h"
 
 /* Functions macros, constants, types and datas         */
 /* ---------------------------------------------------- */
@@ -55,8 +55,9 @@
 
 
 /* WORD RAM variables */
-static osaEventId_t mEncintcommEventPlaceHolder = NULL;
-OSA_TASK_DEFINE(encintcomm_task, gMainThreadPriority_c-1, 1, gMainThreadStackSize_c, 0);
+static struct AES_ctx aes_ctx;
+static struct AES_ctx aes_ctx1;
+static const uint8_t aes_key[KEY_SIZE_16] = {0x1, 0x2,0x3, 0x4,0x5, 0x6,0x7, 0x8,0x9, 0xA,0x1, 0x2,0x3, 0x4,0x5, 0x6};
 
 /* LONG and STRUCTURE RAM variables */
 
@@ -95,11 +96,13 @@ OSA_TASK_DEFINE(encintcomm_task, gMainThreadPriority_c-1, 1, gMainThreadStackSiz
  *END************************************************************************/
 extern uint8_t encrintcomm_init(uint8_t* encript_addr)
 {
-    //encrintcomm_getEvent(mEncintcommEventPlaceHolder);
-    //mEncintcommEventPlaceHolder = OSA_EventCreate(TRUE);
-    //encintcomm_setState(encintcommStateInit);
-    //OSA_TaskCreate(OSA_TASK(encintcomm_task), NULL);
     (void)mac_init(encript_addr);
+}
+
+extern void encripCtx_init(void)
+{
+    AES_init_ctx(&aes_ctx, &aes_key[0]);
+    //AES_init_ctx(&aes_ctx1, &aes_key[0]);
 }
 
 /*FUNCTION*********************************************************************
@@ -125,4 +128,12 @@ extern uint8_t encrintcomm_connect(uint8_t channel, uint16_t pan_id, void (*evt_
 }
 
 
+
+extern uint8_t encrintcomm_transmit(uint16_t dest_address, uint8_t* data, uint8_t data_len)
+{
+
+    encrintcomm_simetricEncription(&aes_ctx, data, data_len);
+    mac_transmit(dest_address, data, data_len);
+    //encrintcomm_simetricEncription(&aes_ctx1, data, data_len);
+}
 
