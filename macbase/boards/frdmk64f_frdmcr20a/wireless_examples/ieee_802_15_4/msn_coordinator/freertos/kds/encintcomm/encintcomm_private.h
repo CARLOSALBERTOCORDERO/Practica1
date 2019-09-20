@@ -71,7 +71,8 @@
 
 /* Exported functions prototypes and macros */
 /* ---------------------------------------- */
-extern uint8_t encrintcomm_simetricEncription(struct AES_ctx* ctx, uint8_t* buf, uint8_t length);
+extern uint8_t encintcomm_simetricEncription(struct AES_ctx* ctx, uint8_t* buf, uint8_t length);
+extern uint16_t encintcomm_CRC32(const uint8_t * inputArray,const uint8_t arrayLength, uint32_t * result,const uint8_t resultLength);
 
 /* Functions prototypes */
 
@@ -80,7 +81,14 @@ extern uint8_t encrintcomm_simetricEncription(struct AES_ctx* ctx, uint8_t* buf,
 
 
 /* Exported defines */
-
+#define ENCINTCOMM_CRC_32_POLYNOM 0x04C11DB7u
+#define ENCINTCOMM_OFFSET_INDEX 4u
+#define ENCINTCOMM_CRC_BYTE_SIZE 4u
+#define ENCINTCOMM_OVERFLOW_MASK 0x100u
+#define ENCINTCOMM_THREE_BYTE_SHIFTING 3u
+#define ENCINTCOMM_LESS_SIGNIFICANT_BYTE 0xFFu
+#define ENCINTCOMM_BYTE_TO_BIT 8u
+#define ENCINTCOMM_SHIFTING_LIMIT 24u
 
 
 #endif /* ENCINTCOMM_ENCINTCOMM_PRIVATE_H_ */

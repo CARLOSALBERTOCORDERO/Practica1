@@ -258,18 +258,18 @@ void AppThread(uint32_t argument)
 				if(button_event == gKBD_EventSW4_c) {
 
 					/*Initialize the MAC Wrapper*/
-				    encripCtx_init();
+				    encipCtx_init();
 					LED_StopFlashingAllLeds();
 					Serial_Print(mInterfaceId,"Initializing MAC.\n\r", gAllowToBlock_d);
 					Serial_Print(mInterfaceId,"Initializing ENCINT_COMM.\n\r", gAllowToBlock_d);
-					encrintcomm_init(mac_address);
+					encintcomm_init(mac_address);
 					Serial_Print(mInterfaceId,"Node is initialized and ready.\n\r", gAllowToBlock_d);
 					/* Goto Energy Detection state. */
 					mPanId = 0xC0C0;
 					mChannel = gLogicalChannel11_c;
 					Serial_Print(mInterfaceId,"Starting connection, this can take several seconds.\n\r", gAllowToBlock_d);
 					Serial_Print(mInterfaceId,"The communication will be encripted.\n\r", gAllowToBlock_d);
-					encrintcomm_connect(mChannel, mPanId, mac_events_handler);
+					encintcomm_connect(mChannel, mPanId, mac_events_handler);
 					gState = waitConnectionResponse;
 				}
 			}
@@ -312,7 +312,7 @@ void AppThread(uint32_t argument)
 				}
 
 				if((mCounter >= 64) || (received_byte == '\r')){
-				    encrintcomm_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+				    encintcomm_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
 					FLib_MemSet(maCommDataBuffer, 0, 64);
 					mCounter = 0;
 				}

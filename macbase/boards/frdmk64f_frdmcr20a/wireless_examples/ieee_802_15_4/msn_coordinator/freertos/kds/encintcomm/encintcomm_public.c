@@ -93,7 +93,7 @@ static encintcommStates_en_T encintcommStates_en = encintcommStateUndef;
  * Return: uint8_t: 0 - success.
  *
  *END************************************************************************/
-extern uint8_t encrintcomm_init(uint8_t* encript_addr)
+extern uint8_t encintcomm_init(uint8_t* encript_addr)
 {
     uint8_t returnVal = 1u;
     if(encintcommStateInitCtx == encintcommStates_en)
@@ -114,7 +114,7 @@ extern uint8_t encrintcomm_init(uint8_t* encript_addr)
  * Return: void.
  *
  *END************************************************************************/
-extern void encripCtx_init(void)
+extern void encipCtx_init(void)
 {
     encintcommStates_en = encintcommStateInitCtx;
     AES_init_ctx(&aes_ctx, &aes_key_default[0]);
@@ -131,7 +131,7 @@ extern void encripCtx_init(void)
  * Return: uint8_t: 0 - success.
  *
  *END************************************************************************/
-extern void encripCtxUsr_init(encintcommkey_st_T* encintcommkey_st)
+extern void encipCtxUsr_init(encintcommkey_st_T* encintcommkey_st)
 {
     encintcommStates_en = encintcommStateInitCtx;
     AES_init_ctx(&aes_ctx, &(encintcommkey_st->key[0]));
@@ -156,7 +156,7 @@ extern void encripCtxUsr_init(encintcommkey_st_T* encintcommkey_st)
  *
  * Return: int: 0 - success.
  *END************************************************************************/
-extern uint8_t encrintcomm_connect(uint8_t channel, uint16_t pan_id, void (*evt_hdlr)(void*))
+extern uint8_t encintcomm_connect(uint8_t channel, uint16_t pan_id, void (*evt_hdlr)(void*))
 {
     mac_connect(channel, pan_id, evt_hdlr);
 }
@@ -183,10 +183,21 @@ extern uint8_t encrintcomm_connect(uint8_t channel, uint16_t pan_id, void (*evt_
  * Return: int: 0 - success.
  *
  *END**************************************************************************/
-extern uint8_t encrintcomm_transmit(uint16_t dest_address, uint8_t* data, uint8_t data_len)
+extern uint8_t encintcomm_transmit(uint16_t dest_address, uint8_t* data, uint8_t data_len)
 {
     uint8_t returnVal = 0;
-    returnVal = encrintcomm_simetricEncription(&aes_ctx, data, data_len);
+    uint8_t index = 0;
+    int8_t auxIndex = 0;
+    uint8_t crcResult[ENCINTCOMM_CRC_BYTE_SIZE] = {0};
+    returnVal = encintcomm_simetricEncription(&aes_ctx, data, data_len);
+    returnVal |= encintcomm_CRC32(data, data_len, crcResult, ENCINTCOMM_CRC_BYTE_SIZE);
+    /* Add CRC32 */
+    for(index = 0;index < ENCINTCOMM_CRC_BYTE_SIZE; index++)
+    {
+        auxIndex = index + data_len;
+        data[auxIndex] = crcResult[index];
+    }
+    data_len += ENCINTCOMM_CRC_BYTE_SIZE;
     returnVal |= (uint8_t)mac_transmit(dest_address, data, data_len);
     return returnVal;
 }
