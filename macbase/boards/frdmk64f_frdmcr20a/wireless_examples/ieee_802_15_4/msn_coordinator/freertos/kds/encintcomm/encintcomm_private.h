@@ -10,12 +10,8 @@
 #include "fsl_os_abstraction.h"
 #include "aes.h"
 
-typedef enum
-{
-    encintcommStateInit = 0,
-    encintcommStateReady
-}encintcommStates_en_T;
 
-extern void encrintcomm_simetricEncription(struct AES_ctx* ctx, uint8_t* buf, uint32_t length);
+
+extern uint8_t encrintcomm_simetricEncription(struct AES_ctx* ctx, uint8_t* buf, uint32_t length);
 
 #endif /* ENCINTCOMM_ENCINTCOMM_PRIVATE_H_ */

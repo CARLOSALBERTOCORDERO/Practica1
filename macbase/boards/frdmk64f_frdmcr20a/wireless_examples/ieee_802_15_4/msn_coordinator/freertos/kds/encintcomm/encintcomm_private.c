@@ -12,10 +12,10 @@
 
 static osaEventId_t mEncintcommEvent = NULL;
 
-static encintcommStates_en_T encintcommStates_en = encintcommStateInit;
 
 
-extern void encrintcomm_simetricEncription(struct AES_ctx* ctx, uint8_t* buf, uint32_t length)
+
+extern uint8_t encrintcomm_simetricEncription(struct AES_ctx* ctx, uint8_t* buf, uint32_t length)
 {
     AES_CTR_xcrypt_buffer(ctx, buf, length);
 }

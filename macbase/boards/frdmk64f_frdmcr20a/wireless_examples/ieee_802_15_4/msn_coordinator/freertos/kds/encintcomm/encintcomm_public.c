@@ -56,11 +56,10 @@
 
 /* WORD RAM variables */
 static struct AES_ctx aes_ctx;
-static struct AES_ctx aes_ctx1;
-static const uint8_t aes_key[KEY_SIZE_16] = {0x1, 0x2,0x3, 0x4,0x5, 0x6,0x7, 0x8,0x9, 0xA,0x1, 0x2,0x3, 0x4,0x5, 0x6};
+static const uint8_t aes_key_default[KEY_SIZE_16] = {0x1, 0x2,0x3, 0x4,0x5, 0x6,0x7, 0x8,0x9, 0xA,0x1, 0x2,0x3, 0x4,0x5, 0x6};
 
 /* LONG and STRUCTURE RAM variables */
-
+static encintcommStates_en_T encintcommStates_en = encintcommStateUndef;
 
 /*======================================================*/
 /* close variable declaration sections                  */
@@ -85,7 +84,7 @@ static const uint8_t aes_key[KEY_SIZE_16] = {0x1, 0x2,0x3, 0x4,0x5, 0x6,0x7, 0x8
 /*FUNCTION*********************************************************************
  *
  * Function Name :  encript_init
- * Description   :  Initilizes the Ecription and CRC drivers.
+ * Description   :  Initilizes the communication and lower drivers.
  *                  This is a blocking function.
  *
  * Params: encript_addr - Pointer to 4 bytes array that contains the MAC
@@ -96,14 +95,49 @@ static const uint8_t aes_key[KEY_SIZE_16] = {0x1, 0x2,0x3, 0x4,0x5, 0x6,0x7, 0x8
  *END************************************************************************/
 extern uint8_t encrintcomm_init(uint8_t* encript_addr)
 {
-    (void)mac_init(encript_addr);
+    uint8_t returnVal = 1u;
+    if(encintcommStateInitCtx == encintcommStates_en)
+    {
+        encintcommStates_en = encintcommStateReady;
+        returnVal = (uint8_t)mac_init(encript_addr);
+    }
+    return returnVal;
 }
 
+/*FUNCTION*********************************************************************
+ *
+ * Function Name :  encripCtx_init
+ * Description   :  Initilize encription context with default key.
+ *
+ * Params: void
+ *
+ * Return: void.
+ *
+ *END************************************************************************/
 extern void encripCtx_init(void)
 {
-    AES_init_ctx(&aes_ctx, &aes_key[0]);
-    //AES_init_ctx(&aes_ctx1, &aes_key[0]);
+    encintcommStates_en = encintcommStateInitCtx;
+    AES_init_ctx(&aes_ctx, &aes_key_default[0]);
 }
+
+/*FUNCTION*********************************************************************
+ *
+ * Function Name :  encripCtx_init
+ * Description   :  Initilize encription context with usr key.
+ *
+ * Params: encript_addr - Pointer to 4 bytes array that contains the MAC
+ *                        address.
+ *
+ * Return: uint8_t: 0 - success.
+ *
+ *END************************************************************************/
+extern void encripCtxUsr_init(encintcommkey_st_T* encintcommkey_st)
+{
+    encintcommStates_en = encintcommStateInitCtx;
+    AES_init_ctx(&aes_ctx, &(encintcommkey_st->key[0]));
+}
+
+
 
 /*FUNCTION*********************************************************************
  *
@@ -128,12 +162,31 @@ extern uint8_t encrintcomm_connect(uint8_t channel, uint16_t pan_id, void (*evt_
 }
 
 
-
+/*FUNCTION**********************************************************************
+ *
+ * Function Name : mac_transmit
+ * Description   : Commands the node to send data to another node over a
+ *                 ieee802.15.4 network.
+ *                 mac_connect() has to be called before hand.
+ *                 This is a non-blocking function. The result of the
+ *                 transmission request will be recibed in a call to the event
+ *                 handler callback (evt_hdlr).
+ *                 The information will be encripted and CRC32 will be added to
+ *                 the end of the message.
+ *
+ *
+ * Params: dest_address  - Address of the data's destination node.
+ *         data   - Pointer to the data array to transmit
+ *         data_len - Size in bytes of the data array.
+ *
+ * Return: int: 0 - success.
+ *
+ *END**************************************************************************/
 extern uint8_t encrintcomm_transmit(uint16_t dest_address, uint8_t* data, uint8_t data_len)
 {
-
-    encrintcomm_simetricEncription(&aes_ctx, data, data_len);
-    mac_transmit(dest_address, data, data_len);
-    //encrintcomm_simetricEncription(&aes_ctx1, data, data_len);
+    uint8_t returnVal = 0;
+    returnVal = encrintcomm_simetricEncription(&aes_ctx, data, data_len);
+    returnVal |= (uint8_t)mac_transmit(dest_address, data, data_len);
+    return returnVal;
 }
 

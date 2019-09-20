@@ -30,6 +30,8 @@
 /* -------- */
 #include "EmbeddedTypes.h"
 
+/* Exported defines */
+#define KEY_SIZE_16 16
 
 /* Exported types and constants */
 /* ---------------------------- */
@@ -37,8 +39,17 @@
 /* Types definition */
 /* typedef */
 
+typedef enum
+{
+    encintcommStateInitCtx = 0,
+    encintcommStateReady,
+    encintcommStateUndef
+}encintcommStates_en_T;
 
-
+typedef struct
+{
+    uint8_t key[KEY_SIZE_16];
+}encintcommkey_st_T;
 
 /*==================================================*/
 /* Declaration of exported constants                */
@@ -75,6 +86,7 @@
 /* Functions prototypes */
 extern uint8_t encrintcomm_init(uint8_t* encript_addr);
 extern void encripCtx_init(void);
+extern void encripCtxUsr_init(encintcommkey_st_T* encintcommkey_st);
 extern uint8_t encrintcomm_connect(uint8_t channel, uint16_t pan_id, void (*evt_hdlr)(void*));
 extern uint8_t encrintcomm_transmit(uint16_t dest_address, uint8_t* data, uint8_t data_len);
 
@@ -83,7 +95,6 @@ extern uint8_t encrintcomm_transmit(uint16_t dest_address, uint8_t* data, uint8_
 /* Functions macros */
 
 
-/* Exported defines */
-#define KEY_SIZE_16 16
+
 
 #endif /*ENCINTCOMM_PUBLIC_H*/
