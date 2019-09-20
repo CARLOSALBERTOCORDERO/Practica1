@@ -368,24 +368,25 @@ void AppThread(uint32_t argument)
 static uint16_t App_CRC(uint8_t * inputArray, uint8_t arrayLength, uint32_t * result)
 {
     const uint8_t gCRCPolym_u8 = 0x07u;
-    const uint8_t rZerosExtention = 8u;
     uint8_t index = 0;
     uint8_t auxIndex = 0;
     uint8_t charStartIndex = 0u;
-    uint8_t zerosExtendedArray[65] = {0};
-    uint16_t indexExtended = 1u;
-    int16_t shiftLeftAux = 0u;
-    uint16_t bitFindData = 0u;
-    uint16_t bitFindDataShifted = 0u;
     uint8_t shiftCounter = 0;
-    uint16_t shiftCounterLimit = 0;
     uint8_t resultCRC = 0;
+    uint8_t crcByteShifting = 0;
+    uint8_t zerosIndex = 1;
     bool_t algorithEnd = FALSE;
+    uint8_t zerosExtendedArray[65] = {0};
+    int16_t shiftLeftAux = 0u;
+    uint16_t bitFindDataShifted = 0u;
+    uint16_t shiftCounterLimit = 0;
+    uint8_t crcResultAux = 0u;
+
     /* Add zeros to the message */
     for(index = 0; index < arrayLength; index++)
     {
-        zerosExtendedArray[indexExtended] = inputArray[index];
-        indexExtended++;
+        zerosExtendedArray[zerosIndex] = inputArray[index];
+        zerosIndex++;
 
     }
     /*Start at the extended array end value*/
@@ -402,15 +403,15 @@ static uint16_t App_CRC(uint8_t * inputArray, uint8_t arrayLength, uint32_t * re
     /*Get the maximum number of shiftings*/
     shiftCounterLimit = charStartIndex * 8;
     /*Apply CRC algorithm*/
-    indexExtended = zerosExtendedArray[charStartIndex];
+    shiftLeftAux = zerosExtendedArray[charStartIndex];
     while(shiftCounterLimit > shiftCounter)
     {
         bitFindDataShifted = 0;
         /*Find first bit in 1*/
         while((0u == bitFindDataShifted) && (shiftCounterLimit > shiftCounter))
         {
-            indexExtended = zerosExtendedArray[charStartIndex] << 1;
-            bitFindDataShifted = indexExtended & 0x100u;
+            shiftLeftAux = zerosExtendedArray[charStartIndex] << 1;
+            bitFindDataShifted = shiftLeftAux & 0x100u;
             shiftCounter++;
             if(shiftCounterLimit <= shiftCounter)
             {
@@ -432,8 +433,8 @@ static uint16_t App_CRC(uint8_t * inputArray, uint8_t arrayLength, uint32_t * re
         if((FALSE == algorithEnd) || ((TRUE == algorithEnd) && (0 != bitFindDataShifted)))
         {
             /*Clean MSB*/
-            indexExtended = zerosExtendedArray[charStartIndex];
-            resultCRC = indexExtended ^ gCRCPolym_u8;
+            crcResultAux = zerosExtendedArray[charStartIndex];
+            resultCRC = crcResultAux ^ gCRCPolym_u8;
             zerosExtendedArray[charStartIndex] = resultCRC;
         }
     }
