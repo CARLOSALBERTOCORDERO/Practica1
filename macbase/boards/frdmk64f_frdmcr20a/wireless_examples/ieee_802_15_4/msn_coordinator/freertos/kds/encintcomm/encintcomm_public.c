@@ -107,7 +107,7 @@ extern uint8_t encrintcomm_init(uint8_t* encript_addr)
 /*FUNCTION*********************************************************************
  *
  * Function Name :  encripCtx_init
- * Description   :  Initilize encription context with default key.
+ * Description   :  Initilize encryption context with default key.
  *
  * Params: void
  *
@@ -123,7 +123,7 @@ extern void encripCtx_init(void)
 /*FUNCTION*********************************************************************
  *
  * Function Name :  encripCtx_init
- * Description   :  Initilize encription context with usr key.
+ * Description   :  Initilize encryption context with user key.
  *
  * Params: encript_addr - Pointer to 4 bytes array that contains the MAC
  *                        address.
@@ -169,10 +169,11 @@ extern uint8_t encrintcomm_connect(uint8_t channel, uint16_t pan_id, void (*evt_
  *                 ieee802.15.4 network.
  *                 mac_connect() has to be called before hand.
  *                 This is a non-blocking function. The result of the
- *                 transmission request will be recibed in a call to the event
+ *                 transmission request will be received in a call to the event
  *                 handler callback (evt_hdlr).
- *                 The information will be encripted and CRC32 will be added to
+ *                 The information will be encrypted and CRC32 will be added to
  *                 the end of the message.
+ *                 IMPORTAN NOTE: The maximum transmission data is 60.
  *
  *
  * Params: dest_address  - Address of the data's destination node.
