@@ -189,9 +189,10 @@ extern uint8_t encintcomm_transmit(uint16_t dest_address, uint8_t* data, uint8_t
     uint8_t index = 0;
     int8_t auxIndex = 0;
     uint8_t crcResult[ENCINTCOMM_CRC_BYTE_SIZE] = {0};
+    /* Encrypt */
     returnVal = encintcomm_simetricEncription(&aes_ctx, data, data_len);
-    returnVal |= encintcomm_CRC32(data, data_len, crcResult, ENCINTCOMM_CRC_BYTE_SIZE);
-    /* Add CRC32 */
+    /* Calculate and add CRC */
+    returnVal |= encintcomm_CRC32(data, data_len, (uint8_t *)&crcResult[0], ENCINTCOMM_CRC_BYTE_SIZE);
     for(index = 0;index < ENCINTCOMM_CRC_BYTE_SIZE; index++)
     {
         auxIndex = index + data_len;
