@@ -2,6 +2,10 @@
 
  */
 
+/*!
+
+ */
+
 /*! *********************************************************************************
  *************************************************************************************
  * Include
@@ -36,7 +40,13 @@ enum
 	stateInit,
 	waitConnectionResponse,
 	stateConnected,
-	stateConnected2
+	stateConnected2,
+	stateConnected3,
+	stateConnected4,
+	stateConnected5,
+	stateConnected6,
+	stateConnected7,
+	stateConnected8
 };
 
 #define mDefaultValueOfDataLen_c               20
@@ -70,6 +80,8 @@ static void    App_HandleKeys(key_event_t events);
 
 void App_init( void );
 void AppThread (uint32_t argument);
+
+
 /*******************************************************************************
  * other Prototypes JLGG
  ******************************************************************************/
@@ -88,7 +100,7 @@ void delay(void);
 void delay(void)
 {
     volatile uint32_t i = 0;
-    for (i = 0; i < 999999; ++i)
+    for (i = 0; i < 999999; ++i)  /* ORIGINAL 800,000 */
     {
         __asm("NOP"); /* delay */
     }
@@ -119,6 +131,17 @@ static char received_data[128] = {0};
 static uint16_t received_data_src = 0xFFFF;
 static uint8_t received_data_len = 0;
 static uint8_t button_event = 0;
+
+static uint8_t Text_1_Array[] = {"NETA.FUNCIONA"};
+static uint8_t Text_2_Array[] = {"LA VELOCIDAD DE LA LUZ ES 299,792 KM/SEG"};
+static uint8_t Text_3_Array[] = {"QUIEN LLEGARA PRIMERO A MARTE LA NASA O SPACEX? QUIEN TENDRA LA GLORIA"};
+static uint8_t Text_4_Array[] = {"NOTICIA MUY IMPORTANTE NADIE EN MEXICO LA TOMO"};
+static uint8_t Text_5_Array[] = {"AVISTAN OVNI, LO PUBLICAN EN GRANDES CADENAS AMERICANAS"};
+static uint8_t Text_6_Array[] = {"POR PRIMERA VEZ, PENTAGONO Y U.S NAVY"};
+static uint8_t Text_7_Array[] = {"CONFIRMAN NOTICIA COMO VERDADERA"};
+static uint8_t Text_8_Array[] = {"ES REAL"};
+
+
 
 uint8_t mac_address[8] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01};
 
@@ -376,8 +399,6 @@ void AppThread(uint32_t argument)
 					Serial_Print(mInterfaceId,"\r\n", gAllowToBlock_d);
 					delay();
 					delay();
-					delay();
-					delay();
 					LED_TurnOffLed(4); /* RECIEVE ANSWER */
 					LED_TurnOnLed(2); /* RX/TX READY */
 				}
@@ -402,94 +423,61 @@ void AppThread(uint32_t argument)
 				}/* Handle events from the MESSAGE CENTER*/
 				if(button_event == gKBD_EventSW4_c)    /* SW1 TRANSMITE MENSAJE TEXTO 1 */
 				{
-						LED_TurnOnLed(3); /* ON TRANSMIT YELLOW */
+						LED_TurnOnLed(3); /* ON YELLOW TX */
 						delay();
 						delay();
-						delay();
-						delay();
-						delay();
-						delay();
-						delay();
-						delay();
-						delay();
-						delay();
-						bool_t result = TRUE ;
-						uint8_t TextArray[] = {"VIAJA 299,792 KM/SEG"};
 						uint16_t received_byte_leght = 0;
 						uint8_t * Array_to_send;
 						Array_to_send = 0;
+						uint8_t result = 0x00;
 						uint8_t j = 0;
-						received_byte_leght = sizeof(TextArray);
+						received_byte_leght = sizeof(Text_1_Array);
 						for ( j = 0 ; j < received_byte_leght;)
 						{
-						Array_to_send = &TextArray[j];
-						maCommDataBuffer[mCounter++]  = *Array_to_send;
-						if ( mCounter >= 64)
+							Array_to_send = &Text_1_Array[j];
+							maCommDataBuffer[mCounter++]  = *Array_to_send;
+							if ( mCounter >= 60 )
 							{
-							mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
-							goto next;
+								mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+								j = received_byte_leght;
 							}
-						j++;
+							j++;
 						}
+						if ( mCounter < 60 )
+						{
 						mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
-						next:
-						LED_TurnOffLed(1);   /* FROM YELLOW , OFF COLOUR RED = ONLY GREEN LED */
-						delay();
-						delay();
-						delay();
-						delay();
-						delay();
-						delay();
-						delay();
-						delay();
+						}
+						LED_TurnOffLed(3);   /* OFF YELLOW TX */
+						LED_TurnOnLed(2);   /* ON GREEN STATUS READY TX/RX  */
 						delay();
 						delay();
 						/*aqui llamamos a la funcion que nos regresa EL result fue psotivo o negativo */
 						/* app func crc confirm */
-						if (result == FALSE )
+						if (result == 0x08 )
 						{
 							mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
-							LED_TurnOffLed(2);   /*STATUS READY TX/RX  GREEN */
-							LED_TurnOnLed(1);   /* TX FAIL RED */
-							delay();
-							delay();
-							delay();
-							delay();
-							delay();
-							delay();
-							delay();
-							delay();
-							delay();
+							LED_TurnOffLed(2);   /* OFF GREEN STATUS READY TX/RX  */
+							LED_TurnOnLed(1);   /* ON RED TX FAIL 1 */
 							delay();
 							delay();
 							/*aqui llamamos a la funcion que nos regresa EL result fue pOsitivo o negativo */
 							/* app func crc confirm */
-							if (result == FALSE )
+							if (result == 0x08 )
 							{
 								mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
-								LED_TurnOffLed(1);   /* TX FAIL RED */
-								LED_TurnOnLed(4);   /* blue */
-								delay();
-								delay();
-								delay();
-								delay();
-								delay();
-								delay();
-								delay();
-								delay();
-								delay();
+								LED_TurnOffLed(1);   /* OFF RED TX FAIL */
+								LED_TurnOnLed(4);   /* ON BLUE FAIL 2 */
 								delay();
 								delay();
 							}
-							LED_TurnOffLed(4);   /*  TX FAIL RED */
-							LED_TurnOnLed(2);   /*STATUS READY TX/RX  GREEN */
+							LED_TurnOffLed(1);   /* OFF RED TX FAIL */
+							LED_TurnOffLed(4);   /* OFF BLUE FAIL 2 */
+							LED_TurnOnLed(2);   /*ON GREEN STATUS READY TX/RX  */
 						}
 						FLib_MemSet(maCommDataBuffer, 0, 64);
 						mCounter = 0;
-
 						gState = stateConnected2;
 						OSA_EventSet(mAppEvent, gAppEvtDummyEvent_c);
-						LED_TurnOnLed(2); /* RX/TX READY */
 				}
 
 
@@ -503,95 +491,478 @@ void AppThread(uint32_t argument)
 			{
 				if(button_event == gKBD_EventSW4_c)    /* SW1 TRANSMITE MENSAJE TEXTO 2 */
 				{
-						LED_TurnOnLed(3); /* ON TRANSMIT YELLOW */
-						delay();
-						delay();
-						delay();
-						delay();
-						delay();
-						delay();
-						delay();
-						delay();
-						delay();
-						delay();
-						bool_t result = FALSE ;
-						uint8_t TextArray[] = {"NETA FUNCIONA, QUIEN LLEGARA PRIMERO A MARTE LA NASA O SPACEX? EL PRIMERO SIN DUDA SERA EL MEJOR MAS MONEY"};
-						uint16_t received_byte_leght = 0;
-						uint8_t * Array_to_send;
-						Array_to_send = 0;
-						uint8_t j = 0;
-						received_byte_leght = sizeof(TextArray);
-						for ( j = 0 ; j < received_byte_leght;)
-						{
-						Array_to_send = &TextArray[j];
+					LED_TurnOnLed(3); /* ON YELLOW TX */
+					delay();
+					delay();
+					uint16_t received_byte_leght = 0;
+					uint8_t * Array_to_send;
+					Array_to_send = 0;
+					uint8_t result = 0x00;
+					uint8_t j = 0;
+					received_byte_leght = sizeof(Text_2_Array);
+					for ( j = 0 ; j < received_byte_leght;)
+					{
+						Array_to_send = &Text_2_Array[j];
 						maCommDataBuffer[mCounter++]  = *Array_to_send;
-						if ( mCounter >= 64)
-							{
-							mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
-							goto next1;
-							}
-						j++;
-						}
-						mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
-						next1:
-						LED_TurnOffLed(1);   /* FROM YELLOW , OFF COLOUR RED = ONLY GREEN LED */
-						delay();
-						delay();
-						delay();
-						delay();
-						delay();
-						delay();
-						delay();
-						delay();
-						delay();
-						delay();
-						delay();
-						/*aqui llamamos a la funcion que nos regresa EL result fue psotivo o negativo */
-						/* app func crc confirm */
-						if (result == FALSE )
+						if ( mCounter >= 60 )
 						{
 							mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
-							LED_TurnOffLed(2);   /*STATUS READY TX/RX  GREEN */
-							LED_TurnOnLed(1);   /* TX FAIL RED */
-							delay();
-							delay();
-							delay();
-							delay();
-							delay();
-							delay();
-							delay();
-							delay();
-							delay();
-							delay();
-							delay();
-							/*aqui llamamos a la funcion que nos regresa EL result fue pOsitivo o negativo */
-							/* app func crc confirm */
-							if (result == FALSE )
-							{
-								mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
-								LED_TurnOffLed(1);   /* TX FAIL RED */
-								LED_TurnOnLed(4);   /* blue */
-								delay();
-								delay();
-								delay();
-								delay();
-								delay();
-								delay();
-								delay();
-								delay();
-								delay();
-								delay();
-								delay();
-							}
-							LED_TurnOffLed(4);   /*  TX FAIL RED */
-							LED_TurnOnLed(2);   /*STATUS READY TX/RX  GREEN */
+							j = received_byte_leght;
 						}
-						FLib_MemSet(maCommDataBuffer, 0, 64);
-						mCounter = 0;
-
-				}
+						j++;
+					}
+					if ( mCounter < 60 )
+					{
+					mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+					}
+					LED_TurnOffLed(3);   /* OFF YELLOW TX */
+					LED_TurnOnLed(2);   /* ON GREEN STATUS READY TX/RX  */
+					delay();
+					delay();
+					/*aqui llamamos a la funcion que nos regresa EL result fue psotivo o negativo */
+					/* app func crc confirm */
+					if (result == 0x08 )
+					{
+						mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+						LED_TurnOffLed(2);   /* OFF GREEN STATUS READY TX/RX  */
+						LED_TurnOnLed(1);   /* ON RED TX FAIL 1 */
+						delay();
+						delay();
+						/*aqui llamamos a la funcion que nos regresa EL result fue pOsitivo o negativo */
+						/* app func crc confirm */
+						if (result == 0x08 )
+						{
+							mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+							LED_TurnOffLed(1);   /* OFF RED TX FAIL */
+							LED_TurnOnLed(4);   /* ON BLUE FAIL 2 */
+							delay();
+							delay();
+						}
+						LED_TurnOffLed(1);   /* OFF RED TX FAIL */
+						LED_TurnOffLed(4);   /* OFF BLUE FAIL 2 */
+						LED_TurnOnLed(2);   /*ON GREEN STATUS READY TX/RX  */
+					}
+					FLib_MemSet(maCommDataBuffer, 0, 64);
+					mCounter = 0;
+					gState = stateConnected3;
+					OSA_EventSet(mAppEvent, gAppEvtDummyEvent_c);
 			}
-			break;
+
+
+		}
+
+		break;
+
+		case stateConnected3:
+
+			if(ev & gAppEvtButton_c)
+			{
+				if(button_event == gKBD_EventSW4_c)    /* SW1 TRANSMITE MENSAJE TEXTO 3 */
+				{
+					LED_TurnOnLed(3); /* ON YELLOW TX */
+					delay();
+					delay();
+					uint16_t received_byte_leght = 0;
+					uint8_t * Array_to_send;
+					Array_to_send = 0;
+					uint8_t result = 0x00;
+					uint8_t j = 0;
+					received_byte_leght = sizeof(Text_3_Array);
+					for ( j = 0 ; j < received_byte_leght;)
+					{
+						Array_to_send = &Text_3_Array[j];
+						maCommDataBuffer[mCounter++]  = *Array_to_send;
+						if ( mCounter >= 60 )
+						{
+							mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+							j = received_byte_leght;
+						}
+						j++;
+					}
+					if ( mCounter < 60 )
+					{
+					mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+					}
+					LED_TurnOffLed(3);   /* OFF YELLOW TX */
+					LED_TurnOnLed(2);   /* ON GREEN STATUS READY TX/RX  */
+					delay();
+					delay();
+					/*aqui llamamos a la funcion que nos regresa EL result fue psotivo o negativo */
+					/* app func crc confirm */
+					if (result == 0x08 )
+					{
+						mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+						LED_TurnOffLed(2);   /* OFF GREEN STATUS READY TX/RX  */
+						LED_TurnOnLed(1);   /* ON RED TX FAIL 1 */
+						delay();
+						delay();
+						/*aqui llamamos a la funcion que nos regresa EL result fue pOsitivo o negativo */
+						/* app func crc confirm */
+						if (result == 0x08 )
+						{
+							mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+							LED_TurnOffLed(1);   /* OFF RED TX FAIL */
+							LED_TurnOnLed(4);   /* ON BLUE FAIL 2 */
+							delay();
+							delay();
+						}
+						LED_TurnOffLed(1);   /* OFF RED TX FAIL */
+						LED_TurnOffLed(4);   /* OFF BLUE FAIL 2 */
+						LED_TurnOnLed(2);   /*ON GREEN STATUS READY TX/RX  */
+					}
+					FLib_MemSet(maCommDataBuffer, 0, 64);
+					mCounter = 0;
+					gState = stateConnected4;
+					OSA_EventSet(mAppEvent, gAppEvtDummyEvent_c);
+			}
+
+
+		}
+
+		break;
+
+		case stateConnected4:
+
+			if(ev & gAppEvtButton_c)
+			{
+				if(button_event == gKBD_EventSW4_c)    /* SW1 TRANSMITE MENSAJE TEXTO 4 */
+				{
+					LED_TurnOnLed(3); /* ON YELLOW TX */
+					delay();
+					delay();
+					uint16_t received_byte_leght = 0;
+					uint8_t * Array_to_send;
+					Array_to_send = 0;
+					uint8_t result = 0x00;
+					uint8_t j = 0;
+					received_byte_leght = sizeof(Text_4_Array);
+					for ( j = 0 ; j < received_byte_leght;)
+					{
+						Array_to_send = &Text_4_Array[j];
+						maCommDataBuffer[mCounter++]  = *Array_to_send;
+						if ( mCounter >= 60 )
+						{
+							mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+							j = received_byte_leght;
+						}
+						j++;
+					}
+					if ( mCounter < 60 )
+					{
+					mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+					}
+					LED_TurnOffLed(3);   /* OFF YELLOW TX */
+					LED_TurnOnLed(2);   /* ON GREEN STATUS READY TX/RX  */
+					delay();
+					delay();
+					/*aqui llamamos a la funcion que nos regresa EL result fue psotivo o negativo */
+					/* app func crc confirm */
+					if (result == 0x08 )
+					{
+						mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+						LED_TurnOffLed(2);   /* OFF GREEN STATUS READY TX/RX  */
+						LED_TurnOnLed(1);   /* ON RED TX FAIL 1 */
+						delay();
+						delay();
+						/*aqui llamamos a la funcion que nos regresa EL result fue pOsitivo o negativo */
+						/* app func crc confirm */
+						if (result == 0x08 )
+						{
+							mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+							LED_TurnOffLed(1);   /* OFF RED TX FAIL */
+							LED_TurnOnLed(4);   /* ON BLUE FAIL 2 */
+							delay();
+							delay();
+						}
+						LED_TurnOffLed(1);   /* OFF RED TX FAIL */
+						LED_TurnOffLed(4);   /* OFF BLUE FAIL 2 */
+						LED_TurnOnLed(2);   /*ON GREEN STATUS READY TX/RX  */
+					}
+					FLib_MemSet(maCommDataBuffer, 0, 64);
+					mCounter = 0;
+					gState = stateConnected5;
+					OSA_EventSet(mAppEvent, gAppEvtDummyEvent_c);
+			}
+
+
+		}
+
+		break;
+		case stateConnected5:
+
+			if(ev & gAppEvtButton_c)
+			{
+				if(button_event == gKBD_EventSW4_c)    /* SW1 TRANSMITE MENSAJE TEXTO 5 */
+				{
+					LED_TurnOnLed(3); /* ON YELLOW TX */
+					delay();
+					delay();
+					uint16_t received_byte_leght = 0;
+					uint8_t * Array_to_send;
+					Array_to_send = 0;
+					uint8_t result = 0x00;
+					uint8_t j = 0;
+					received_byte_leght = sizeof(Text_5_Array);
+					for ( j = 0 ; j < received_byte_leght;)
+					{
+						Array_to_send = &Text_5_Array[j];
+						maCommDataBuffer[mCounter++]  = *Array_to_send;
+						if ( mCounter >= 60 )
+						{
+							mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+							j = received_byte_leght;
+						}
+						j++;
+					}
+					if ( mCounter < 60 )
+					{
+					mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+					}
+					LED_TurnOffLed(3);   /* OFF YELLOW TX */
+					LED_TurnOnLed(2);   /* ON GREEN STATUS READY TX/RX  */
+					delay();
+					delay();
+					/*aqui llamamos a la funcion que nos regresa EL result fue psotivo o negativo */
+					/* app func crc confirm */
+					if (result == 0x08 )
+					{
+						mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+						LED_TurnOffLed(2);   /* OFF GREEN STATUS READY TX/RX  */
+						LED_TurnOnLed(1);   /* ON RED TX FAIL 1 */
+						delay();
+						delay();
+						/*aqui llamamos a la funcion que nos regresa EL result fue pOsitivo o negativo */
+						/* app func crc confirm */
+						if (result == 0x08 )
+						{
+							mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+							LED_TurnOffLed(1);   /* OFF RED TX FAIL */
+							LED_TurnOnLed(4);   /* ON BLUE FAIL 2 */
+							delay();
+							delay();
+						}
+						LED_TurnOffLed(1);   /* OFF RED TX FAIL */
+						LED_TurnOffLed(4);   /* OFF BLUE FAIL 2 */
+						LED_TurnOnLed(2);   /*ON GREEN STATUS READY TX/RX  */
+					}
+					FLib_MemSet(maCommDataBuffer, 0, 64);
+					mCounter = 0;
+					gState = stateConnected6;
+					OSA_EventSet(mAppEvent, gAppEvtDummyEvent_c);
+			}
+
+
+		}
+
+		break;
+
+		case stateConnected6:
+
+			if(ev & gAppEvtButton_c)
+			{
+				if(button_event == gKBD_EventSW4_c)    /* SW1 TRANSMITE MENSAJE TEXTO 6 */
+				{
+					LED_TurnOnLed(3); /* ON YELLOW TX */
+					delay();
+					delay();
+					uint16_t received_byte_leght = 0;
+					uint8_t * Array_to_send;
+					Array_to_send = 0;
+					uint8_t result = 0x00;
+					uint8_t j = 0;
+					received_byte_leght = sizeof(Text_6_Array);
+					for ( j = 0 ; j < received_byte_leght;)
+					{
+						Array_to_send = &Text_6_Array[j];
+						maCommDataBuffer[mCounter++]  = *Array_to_send;
+						if ( mCounter >= 60 )
+						{
+							mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+							j = received_byte_leght;
+						}
+						j++;
+					}
+					if ( mCounter < 60 )
+					{
+					mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+					}
+					LED_TurnOffLed(3);   /* OFF YELLOW TX */
+					LED_TurnOnLed(2);   /* ON GREEN STATUS READY TX/RX  */
+					delay();
+					delay();
+					/*aqui llamamos a la funcion que nos regresa EL result fue psotivo o negativo */
+					/* app func crc confirm */
+					if (result == 0x08 )
+					{
+						mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+						LED_TurnOffLed(2);   /* OFF GREEN STATUS READY TX/RX  */
+						LED_TurnOnLed(1);   /* ON RED TX FAIL 1 */
+						delay();
+						delay();
+						/*aqui llamamos a la funcion que nos regresa EL result fue pOsitivo o negativo */
+						/* app func crc confirm */
+						if (result == 0x08 )
+						{
+							mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+							LED_TurnOffLed(1);   /* OFF RED TX FAIL */
+							LED_TurnOnLed(4);   /* ON BLUE FAIL 2 */
+							delay();
+							delay();
+						}
+						LED_TurnOffLed(1);   /* OFF RED TX FAIL */
+						LED_TurnOffLed(4);   /* OFF BLUE FAIL 2 */
+						LED_TurnOnLed(2);   /*ON GREEN STATUS READY TX/RX  */
+					}
+					FLib_MemSet(maCommDataBuffer, 0, 64);
+					mCounter = 0;
+					gState = stateConnected7;
+					OSA_EventSet(mAppEvent, gAppEvtDummyEvent_c);
+			}
+
+
+		}
+
+		break;
+
+		case stateConnected7:
+
+			if(ev & gAppEvtButton_c)
+			{
+				if(button_event == gKBD_EventSW4_c)    /* SW1 TRANSMITE MENSAJE TEXTO 7 */
+				{
+					LED_TurnOnLed(3); /* ON YELLOW TX */
+					delay();
+					delay();
+					uint16_t received_byte_leght = 0;
+					uint8_t * Array_to_send;
+					Array_to_send = 0;
+					uint8_t result = 0x00;
+					uint8_t j = 0;
+					received_byte_leght = sizeof(Text_7_Array);
+					for ( j = 0 ; j < received_byte_leght;)
+					{
+						Array_to_send = &Text_7_Array[j];
+						maCommDataBuffer[mCounter++]  = *Array_to_send;
+						if ( mCounter >= 60 )
+						{
+							mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+							j = received_byte_leght;
+						}
+						j++;
+					}
+					if ( mCounter < 60 )
+					{
+					mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+					}
+					LED_TurnOffLed(3);   /* OFF YELLOW TX */
+					LED_TurnOnLed(2);   /* ON GREEN STATUS READY TX/RX  */
+					delay();
+					delay();
+					/*aqui llamamos a la funcion que nos regresa EL result fue psotivo o negativo */
+					/* app func crc confirm */
+					if (result == 0x08 )
+					{
+						mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+						LED_TurnOffLed(2);   /* OFF GREEN STATUS READY TX/RX  */
+						LED_TurnOnLed(1);   /* ON RED TX FAIL 1 */
+						delay();
+						delay();
+						/*aqui llamamos a la funcion que nos regresa EL result fue pOsitivo o negativo */
+						/* app func crc confirm */
+						if (result == 0x08 )
+						{
+							mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+							LED_TurnOffLed(1);   /* OFF RED TX FAIL */
+							LED_TurnOnLed(4);   /* ON BLUE FAIL 2 */
+							delay();
+							delay();
+						}
+						LED_TurnOffLed(1);   /* OFF RED TX FAIL */
+						LED_TurnOffLed(4);   /* OFF BLUE FAIL 2 */
+						LED_TurnOnLed(2);   /*ON GREEN STATUS READY TX/RX  */
+					}
+					FLib_MemSet(maCommDataBuffer, 0, 64);
+					mCounter = 0;
+					gState = stateConnected8;
+					OSA_EventSet(mAppEvent, gAppEvtDummyEvent_c);
+			}
+
+
+		}
+
+		break;
+
+		case stateConnected8:
+
+			if(ev & gAppEvtButton_c)
+			{
+				if(button_event == gKBD_EventSW4_c)    /* SW1 TRANSMITE MENSAJE TEXTO 8 */
+				{
+					LED_TurnOnLed(3); /* ON YELLOW TX */
+					delay();
+					delay();
+					uint16_t received_byte_leght = 0;
+					uint8_t * Array_to_send;
+					Array_to_send = 0;
+					uint8_t result = 0x00;
+					uint8_t j = 0;
+					received_byte_leght = sizeof(Text_8_Array);
+					for ( j = 0 ; j < received_byte_leght;)
+					{
+						Array_to_send = &Text_8_Array[j];
+						maCommDataBuffer[mCounter++]  = *Array_to_send;
+						if ( mCounter >= 60 )
+						{
+							mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+							j = received_byte_leght;
+						}
+						j++;
+					}
+					if ( mCounter < 60 )
+					{
+					mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+					}
+					LED_TurnOffLed(3);   /* OFF YELLOW TX */
+					LED_TurnOnLed(2);   /* ON GREEN STATUS READY TX/RX  */
+					delay();
+					delay();
+					/*aqui llamamos a la funcion que nos regresa EL result fue psotivo o negativo */
+					/* app func crc confirm */
+					if (result == 0x08 )
+					{
+						mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+						LED_TurnOffLed(2);   /* OFF GREEN STATUS READY TX/RX  */
+						LED_TurnOnLed(1);   /* ON RED TX FAIL 1 */
+						delay();
+						delay();
+						/*aqui llamamos a la funcion que nos regresa EL result fue pOsitivo o negativo */
+						/* app func crc confirm */
+						if (result == 0x08 )
+						{
+							mac_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+							LED_TurnOffLed(1);   /* OFF RED TX FAIL */
+							LED_TurnOnLed(4);   /* ON BLUE FAIL 2 */
+							delay();
+							delay();
+						}
+						LED_TurnOffLed(1);   /* OFF RED TX FAIL */
+						LED_TurnOffLed(4);   /* OFF BLUE FAIL 2 */
+						LED_TurnOnLed(2);   /*ON GREEN STATUS READY TX/RX  */
+					}
+					FLib_MemSet(maCommDataBuffer, 0, 64);
+					mCounter = 0;
+					gState = stateConnected;
+					OSA_EventSet(mAppEvent, gAppEvtDummyEvent_c);
+				}
+
+
+			}
+
+		break;
+
+
+
+
 		} /* end switch*/
 
 	}
@@ -657,3 +1028,7 @@ static void App_HandleKeys( key_event_t events )
 		break;
 	}
 }
+
+
+
+
