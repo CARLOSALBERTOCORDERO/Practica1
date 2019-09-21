@@ -49,7 +49,7 @@
 /* Definition of RAM variables                          */
 /*======================================================*/
 /* BYTE RAM variables */
-static uint8_t zerosExtendedArray[68] = {0};
+static uint8_t zerosExtendedArray[ENCINTCOMM_ZEROS_EXTENDED_SIZE] = {0};
 
 /* WORD RAM variables */
 
@@ -137,6 +137,11 @@ extern uint16_t encintcomm_CRC32(const uint8_t * inputArray,const uint8_t arrayL
     uint32_t crcResultAux = 0u;
     uint32_t crcByteAux = 0u;
 
+    /* Clean zeros extended array before using it */
+    for(index = 0; index < ENCINTCOMM_ZEROS_EXTENDED_SIZE; index++)
+    {
+        zerosExtendedArray[index] = 0u;;
+    }
     /* Add zeros to the message */
     for(index = 0; index < arrayLength; index++)
     {

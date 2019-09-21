@@ -89,6 +89,8 @@ extern uint16_t encintcomm_CRC32(const uint8_t * inputArray,const uint8_t arrayL
 #define ENCINTCOMM_LESS_SIGNIFICANT_BYTE 0xFFu
 #define ENCINTCOMM_BYTE_TO_BIT 8u
 #define ENCINTCOMM_SHIFTING_LIMIT 24u
+#define ENCINTCOMM_ZEROS_EXTENDED_SIZE 68
+
 
 
 #endif /* ENCINTCOMM_ENCINTCOMM_PRIVATE_H_ */
