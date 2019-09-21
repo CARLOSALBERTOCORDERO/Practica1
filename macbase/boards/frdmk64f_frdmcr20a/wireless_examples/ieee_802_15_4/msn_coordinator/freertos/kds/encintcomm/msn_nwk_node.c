@@ -100,7 +100,7 @@ void delay(void);
 void delay(void)
 {
     volatile uint32_t i = 0;
-    for (i = 0; i < 999999; ++i)  /* ORIGINAL 800,000 */
+    for (i = 0; i < 990000; ++i)  /* ORIGINAL 800,000 */
     {
         __asm("NOP"); /* delay */
     }
@@ -350,7 +350,8 @@ void AppThread(uint32_t argument)
 
 				gState = stateConnected;
 				OSA_EventSet(mAppEvent, gAppEvtDummyEvent_c);
-				LED_TurnOnLed(2); /* RX/TX READY */
+				LED_TurnOnLed(1); /* RED */
+				LED_TurnOnLed(4); /* BLUE */
 			}
 
 			break;
@@ -388,8 +389,7 @@ void AppThread(uint32_t argument)
 			{
 				if(received_data_len)
 				{
-					LED_TurnOffLed(2); /* RX/TX READY */
-					LED_TurnOnLed(4); /* RECIEVE ANSWER */
+					LED_TurnOffLed(1); /* RX/TX READY */
 					Serial_Print(mInterfaceId,"Message from ", gAllowToBlock_d);
 					Serial_PrintHex(mInterfaceId,(uint8_t*)&received_data_src, 2, 0);
 					Serial_Print(mInterfaceId," : ", gAllowToBlock_d);
@@ -398,7 +398,6 @@ void AppThread(uint32_t argument)
 					delay();
 					delay();
 					LED_TurnOffLed(4); /* RECIEVE ANSWER */
-					LED_TurnOnLed(2); /* RX/TX READY */
 				}
 				else
 				{
