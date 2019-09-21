@@ -134,14 +134,12 @@ static uint8_t button_event = 0;
 
 static uint8_t Text_1_Array[] = {"NETA.FUNCIONA"};
 static uint8_t Text_2_Array[] = {"LA VELOCIDAD DE LA LUZ ES 299,792 KM/SEG"};
-static uint8_t Text_3_Array[] = {"QUIEN LLEGARA PRIMERO A MARTE LA NASA O SPACEX? QUIEN TENDRA LA GLORIA"};
+static uint8_t Text_3_Array[] = {"QUIEN LLEGARA PRIMERO A MARTE LA NASA O SPACEX? QUIEN TENDRA LA GLORIA Y EL DINERO"};
 static uint8_t Text_4_Array[] = {"NOTICIA MUY IMPORTANTE NADIE EN MEXICO LA TOMO"};
-static uint8_t Text_5_Array[] = {"AVISTAN OVNI, LO PUBLICAN EN GRANDES CADENAS AMERICANAS"};
+static uint8_t Text_5_Array[] = {"AVISTAN OVNI, LO PUBLICAN EN GRANDES CADENAS AMERICANAS COMO CBS"};
 static uint8_t Text_6_Array[] = {"POR PRIMERA VEZ, PENTAGONO Y U.S NAVY"};
-static uint8_t Text_7_Array[] = {"CONFIRMAN NOTICIA COMO VERDADERA"};
-static uint8_t Text_8_Array[] = {"ES REAL"};
-
-
+static uint8_t Text_7_Array[] = {"CONFIRMAN LA NOTICIA COMO VERDADERA"};
+static uint8_t Text_8_Array[] = {"ES REAL TIENEN DATOS Y FOTOS DE UFO"};
 
 uint8_t mac_address[8] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01};
 
@@ -497,7 +495,7 @@ void AppThread(uint32_t argument)
 					uint16_t received_byte_leght = 0;
 					uint8_t * Array_to_send;
 					Array_to_send = 0;
-					uint8_t result = 0x00;
+					uint8_t result = 0x08;
 					uint8_t j = 0;
 					received_byte_leght = sizeof(Text_2_Array);
 					for ( j = 0 ; j < received_byte_leght;)
