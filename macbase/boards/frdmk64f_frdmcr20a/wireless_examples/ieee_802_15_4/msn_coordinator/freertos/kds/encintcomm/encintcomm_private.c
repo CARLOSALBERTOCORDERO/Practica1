@@ -104,6 +104,7 @@ static uint8_t zerosExtendedArray[ENCINTCOMM_ZEROS_EXTENDED_SIZE] = {0};
 extern uint8_t encintcomm_simetricEncription(struct AES_ctx* ctx, uint8_t* buf, uint8_t length)
 {
     AES_CTR_xcrypt_buffer(ctx, buf, (uint32_t)length);
+    return 0;
 }
 
 /*FUNCTION*********************************************************************
@@ -140,7 +141,7 @@ extern uint16_t encintcomm_CRC32(const uint8_t * inputArray,const uint8_t arrayL
     /* Clean zeros extended array before using it */
     for(index = 0; index < ENCINTCOMM_ZEROS_EXTENDED_SIZE; index++)
     {
-        zerosExtendedArray[index] = 0u;;
+        zerosExtendedArray[index] = 0u;
     }
     /* Add zeros to the message */
     for(index = 0; index < arrayLength; index++)
@@ -227,5 +228,7 @@ extern uint16_t encintcomm_CRC32(const uint8_t * inputArray,const uint8_t arrayL
     }
     return 0u;
 }
+
+
 
 

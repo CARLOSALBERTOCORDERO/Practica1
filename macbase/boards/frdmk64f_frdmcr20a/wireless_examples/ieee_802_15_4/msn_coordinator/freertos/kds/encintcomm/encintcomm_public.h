@@ -89,6 +89,7 @@ extern void encipCtx_init(void);
 extern void encipCtxUsr_init(encintcommkey_st_T* encintcommkey_st);
 extern uint8_t encintcomm_connect(uint8_t channel, uint16_t pan_id, void (*evt_hdlr)(void*));
 extern uint8_t encintcomm_transmit(uint16_t dest_address, uint8_t* data, uint8_t data_len);
+extern uint8_t encintcomm_received( uint8_t* data, uint8_t * data_len, uint8_t * status);
 
 
 

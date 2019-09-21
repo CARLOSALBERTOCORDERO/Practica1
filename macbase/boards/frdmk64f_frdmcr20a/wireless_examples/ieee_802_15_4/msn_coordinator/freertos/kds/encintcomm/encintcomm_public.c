@@ -159,6 +159,7 @@ extern void encipCtxUsr_init(encintcommkey_st_T* encintcommkey_st)
 extern uint8_t encintcomm_connect(uint8_t channel, uint16_t pan_id, void (*evt_hdlr)(void*))
 {
     mac_connect(channel, pan_id, evt_hdlr);
+    return 0;
 }
 
 
@@ -203,3 +204,46 @@ extern uint8_t encintcomm_transmit(uint16_t dest_address, uint8_t* data, uint8_t
     return returnVal;
 }
 
+
+extern uint8_t encintcomm_received( uint8_t* data, uint8_t * data_len, uint8_t * status)
+{
+    uint8_t returnVal = 0u;
+    uint8_t crcResult[ENCINTCOMM_CRC_BYTE_SIZE] = {0u};
+    uint8_t crcReceived[ENCINTCOMM_CRC_BYTE_SIZE] = {0u};
+    uint8_t index = 0u;
+    int8_t auxIndex = 0u;
+    int8_t auxDataLength = 0u;
+    bool_t crcCorrect = TRUE;
+
+    /* Take CRC from received data and remove it */
+    for(index = 0; index <ENCINTCOMM_CRC_BYTE_SIZE; index++)
+    {
+        auxIndex = *data_len - ENCINTCOMM_CRC_BYTE_SIZE + index;
+        crcReceived[index] = data[auxIndex];
+        data[auxIndex] = 0u;
+    }
+    auxDataLength = *data_len - ENCINTCOMM_CRC_BYTE_SIZE;
+    /* Calculate CRC */
+    returnVal |= encintcomm_CRC32(data, auxDataLength, (uint8_t *)&crcResult[0], ENCINTCOMM_CRC_BYTE_SIZE);
+    /* Compare CRC */
+    for(index = 0; index <ENCINTCOMM_CRC_BYTE_SIZE; index++)
+    {
+        if(crcReceived[index] != crcResult[index])
+        {
+            crcCorrect = FALSE;
+        }
+    }
+    /* Des-encrypt */
+    returnVal |= encintcomm_simetricEncription(&aes_ctx, data, auxDataLength);
+    /*Load length and status */
+    *data_len = auxDataLength;
+    if(FALSE == crcCorrect)
+    {
+        *status = 0x08;
+    }
+    if(0 != returnVal)
+    {
+        *status |= 0x80;
+    }
+    return returnVal;
+}
