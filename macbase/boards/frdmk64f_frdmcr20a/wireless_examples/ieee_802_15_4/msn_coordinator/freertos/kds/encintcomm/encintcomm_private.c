@@ -114,13 +114,13 @@ extern uint8_t encintcomm_simetricEncription(struct AES_ctx* ctx, uint8_t* buf, 
  *
  * Params: inputArray(uint8_t*) - Input Array.
  *         arrayLength(uint8_t) - Input Array Length.
- *         result(uint32_t*) - Result Array.
+ *         result(uint8_t*) - Result Array.
  *         resultLength(uint8_t) - Result Array Length. Maximum value is 4
  *
  * Return: uint8_t: 0 - success.
  *
  *END************************************************************************/
-extern uint16_t encintcomm_CRC32(const uint8_t * inputArray,const uint8_t arrayLength, uint32_t * result,const uint8_t resultLength)
+extern uint16_t encintcomm_CRC32(const uint8_t * inputArray,const uint8_t arrayLength, uint8_t * result,const uint8_t resultLength)
 {
     const uint32_t gCRCPolym_u8 = ENCINTCOMM_CRC_32_POLYNOM;
     uint8_t index = 0;
@@ -217,6 +217,7 @@ extern uint16_t encintcomm_CRC32(const uint8_t * inputArray,const uint8_t arrayL
     {
         zerosIndex = charStartIndex - index;
         auxIndex = resultLength - index;
+        auxIndex--;
         result[auxIndex] = zerosExtendedArray[zerosIndex];
     }
     return 0u;

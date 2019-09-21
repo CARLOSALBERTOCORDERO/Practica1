@@ -72,7 +72,7 @@
 /* Exported functions prototypes and macros */
 /* ---------------------------------------- */
 extern uint8_t encintcomm_simetricEncription(struct AES_ctx* ctx, uint8_t* buf, uint8_t length);
-extern uint16_t encintcomm_CRC32(const uint8_t * inputArray,const uint8_t arrayLength, uint32_t * result,const uint8_t resultLength);
+extern uint16_t encintcomm_CRC32(const uint8_t * inputArray,const uint8_t arrayLength, uint8_t * result,const uint8_t resultLength);
 
 /* Functions prototypes */
 
