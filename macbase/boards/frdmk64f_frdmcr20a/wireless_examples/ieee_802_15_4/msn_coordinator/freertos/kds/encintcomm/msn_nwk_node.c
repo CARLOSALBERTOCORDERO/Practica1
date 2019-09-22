@@ -86,10 +86,6 @@ void AppThread (uint32_t argument);
 void delay(void);
 
 /*******************************************************************************
- * Variables
- ******************************************************************************/
-
-/*******************************************************************************
  * Code JLGG
  ******************************************************************************/
 void delay(void)
@@ -128,17 +124,16 @@ static uint16_t received_data_src = 0xFFFF;
 static uint8_t received_data_len = 0;
 static uint8_t button_event = 0;
 
-static uint8_t Text_1_Array[] = {"NETA.FUNCIONA"};
-static uint8_t Text_2_Array[] = {"LA VELOCIDAD DE LA LUZ ES 299,792 KM/SEG"};
-static uint8_t Text_3_Array[] = {"QUIEN LLEGARA PRIMERO A MARTE LA NASA O SPACEX? "};
-static uint8_t Text_4_Array[] = {"QUIEN TENDRA LA GLORIA Y EL DINERO"};
-static uint8_t Text_5_Array[] = {"AVISTAN OVNI, LO PUBLICAN EN CBS"};
-static uint8_t Text_6_Array[] = {"POR PRIMERA VEZ, PENTAGONO Y U.S NAVY"};
-static uint8_t Text_7_Array[] = {"CONFIRMAN LA NOTICIA COMO VERDADERA"};
-static uint8_t Text_8_Array[] = {"ES REAL TIENEN DATOS RADAR Y FOTOS DE UFO"};
+uint8_t Text_1_Array[] = {"NETA FUNCIONA"};
+uint8_t Text_2_Array[] = {"LA LUZ VIAJA A 300,000 KM"};
+uint8_t Text_3_Array[] = {"QUIEN LLEGARA PRIMERO "};
+uint8_t Text_4_Array[] = {"A MARTE LA NASA O SPACEX?"};
+uint8_t Text_5_Array[] = {"NOTICIA SIN ECO MUNDIAL"};
+uint8_t Text_6_Array[] = {"PENTAGONO Y U.S. NAVY"};
+uint8_t Text_7_Array[] = {"CONFIRMAN LA NOTICIA"};
+uint8_t Text_8_Array[] = {"EL UFO DICE ES REAL"};
 
-
-uint8_t mac_address[8] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01};
+uint8_t mac_address[8] = {0x01,0x01,0x01,0x001,0x001,0x001,0x001,0x02};
 
 static uint8_t maCommDataBuffer[64] = {0};
 
@@ -281,7 +276,7 @@ void AppThread(uint32_t argument)
 	osaEventFlags_t ev;
 	/* Stores the error/success code returned by some functions. */
     static uint8_t mCounter = 0;
-    uint8_t status = 0;
+    static uint8_t status = 0;
 	while(1)
 	{
 		OSA_EventWait(mAppEvent, osaEventFlagsAll_c, FALSE, osaWaitForever_c, &ev);
@@ -289,20 +284,26 @@ void AppThread(uint32_t argument)
 		switch(gState)
 		{
 		case stateInit:
-			if(ev & gAppEvtButton_c){
-				if(button_event == gKBD_EventSW3_c) {
+			if(ev & gAppEvtButton_c)
+			{
+				if(button_event == gKBD_EventSW3_c)
+				{
 					Serial_Print(mInterfaceId,"MAC address: ", gAllowToBlock_d);
-					for(int i = 0; i<8; i++) {
+					for(int i = 0; i<8; i++)
+					{
 						mac_address[i]++;
 						Serial_PrintHex(mInterfaceId,(uint8_t*)&mac_address[i], 1, 0);
 					}
 					Serial_Print(mInterfaceId,"\r\n", gAllowToBlock_d);
 				}
-				if(button_event == gKBD_EventSW4_c) {
-
+				if(button_event == gKBD_EventSW4_c)
+				{
 					/*Initialize the MAC Wrapper*/
 				    encipCtx_init();
 					LED_StopFlashingAllLeds();
+
+					LED_TurnOnLed(2); /* RX/TX READY */
+
 					Serial_Print(mInterfaceId,"Initializing MAC.\n\r", gAllowToBlock_d);
 					Serial_Print(mInterfaceId,"Initializing ENCINT_COMM.\n\r", gAllowToBlock_d);
 					encintcomm_init(mac_address);
@@ -314,17 +315,18 @@ void AppThread(uint32_t argument)
 					Serial_Print(mInterfaceId,"The communication will be encripted.\n\r", gAllowToBlock_d);
 					encintcomm_connect(mChannel, mPanId, mac_events_handler);
 					gState = waitConnectionResponse;
+					OSA_EventSet(mAppEvent, gAppEvtDummyEvent_c);
 				}
 			}
-
-
 			break;
 
-		case waitConnectionResponse:
-			/* Handle connection response */
-			if(node_connected){
+		case waitConnectionResponse:   /* Handle connection response */
+
+			if(node_connected)
+			{
 				Serial_Print(mInterfaceId," Node Connected as ", gAllowToBlock_d);
-				if(node_is_coordinator){
+				if(node_is_coordinator)
+				{
 					Serial_Print(mInterfaceId,"Coordinator with short address: ", gAllowToBlock_d);
 				}
 				else {
@@ -336,12 +338,11 @@ void AppThread(uint32_t argument)
 				Serial_Print(mInterfaceId," Channel: ", gAllowToBlock_d);
 				Serial_PrintHex(mInterfaceId,(uint8_t*)&mChannel, 1, 0);
 				Serial_Print(mInterfaceId,"\r\n", gAllowToBlock_d);
+				LED_TurnOnLed(1); /* RED */
+				LED_TurnOnLed(4); /* BLUE */
 
 				gState = stateConnected;
 				OSA_EventSet(mAppEvent, gAppEvtDummyEvent_c);
-				LED_TurnOnLed(1); /* RED */
-				LED_TurnOnLed(4); /* BLUE */
-				LED_TurnOnLed(2); /* RX/TX READY */
 			}
 
 			break;
@@ -353,11 +354,13 @@ void AppThread(uint32_t argument)
 				uint16_t count;
 				unsigned char received_byte = 0;
 				(void)Serial_GetByteFromRxBuffer(mInterfaceId, &received_byte, &count);
-				if((received_byte >= ' ') && (received_byte <= '~')) {
+				if((received_byte >= ' ') && (received_byte <= '~'))
+				{
 					maCommDataBuffer[mCounter++] = received_byte;
 				}
 
-				if((mCounter >= 64) || (received_byte == '\r')){
+				if((mCounter >= 64) || (received_byte == '\r'))
+				{
 				    encintcomm_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
 					FLib_MemSet(maCommDataBuffer, 0, 64);
 					mCounter = 0;
@@ -365,37 +368,36 @@ void AppThread(uint32_t argument)
 			} */
 
 			/* Handle MAC management events */
-			if(ev & gAppEvtMacManagement_c){
+			if(ev & gAppEvtMacManagement_c)
+			{
 				Serial_Print(mInterfaceId,"Network management event: ", gAllowToBlock_d);
 				Serial_PrintHex(mInterfaceId,(uint8_t*)&mlme_event, 4, 0);
 				Serial_Print(mInterfaceId,"\r\n", gAllowToBlock_d);
 			}
 
 			/* Handle MAC data events */
-			if(ev & gAppEvtMacData_c){
+			if(ev & gAppEvtMacData_c)
+			{
 				if(received_data_len)
 				{
+					LED_TurnOffLed(1); /* RED */
+					LED_TurnOffLed(2); /* GREEN */
+					LED_TurnOnLed(4); /* BLUE */
+
 					Serial_Print(mInterfaceId,"Message from ", gAllowToBlock_d);
 					Serial_PrintHex(mInterfaceId,(uint8_t*)&received_data_src, 2, 0);
 					Serial_Print(mInterfaceId," : ", gAllowToBlock_d);
 					encintcomm_received(&received_data[0], &received_data_len, &status);
 					Serial_Print(mInterfaceId, received_data, gAllowToBlock_d);
 					Serial_Print(mInterfaceId,"\r\n", gAllowToBlock_d);
-					if (status && 0xFF )
-					{
-						if (status == 0x08)
+
+					if ((status == 0x08)||(status == 0x80))
 						{
-						Serial_Print(mInterfaceId,"CRC ERROR. NEW MESSAGE WILL BE SENT.\n\r", gAllowToBlock_d);
+						Serial_Print(mInterfaceId,"CRC-ENCRIPT ERROR.\r\n", gAllowToBlock_d);
 						}
-						if (status == 0x80)
-						{
-						Serial_Print(mInterfaceId,"ENCRIPT ERROR. NEW MESSAGE WILL BE SENT.\n\r", gAllowToBlock_d);
-						}
-						if (status == 0x88)
-						{
-						Serial_Print(mInterfaceId,"CRC-ENCRIPT ERROR. NEW MESSAGE WILL BE SENT.\n\r", gAllowToBlock_d);
-						}
-					}
+					delay();
+					delay();
+					LED_TurnOffLed(2); /* GREEN */
 				}
 				else {
 					Serial_Print(mInterfaceId,"Network data event: ", gAllowToBlock_d);
@@ -404,7 +406,6 @@ void AppThread(uint32_t argument)
 				}
 
 			}
-
 			/* Handle button events */    /* SW2 DESTINATION  */
 			if(ev & gAppEvtButton_c)
 			{
@@ -415,9 +416,14 @@ void AppThread(uint32_t argument)
 					Serial_PrintHex(mInterfaceId,(uint8_t*)&mDestinationAddress, 2, 0);
 					Serial_Print(mInterfaceId,"\r\n", gAllowToBlock_d);
 				}
+
+				/* Handle events from the MESSAGE CENTER*/
 				if(button_event == gKBD_EventSW4_c)    /* SW1 TRANSMITE MENSAJE TEXTO 1 */
 				{
-						LED_TurnOnLed(3); /* ON YELLOW TX */
+					LED_TurnOffLed(1); /* RED */
+					LED_TurnOffLed(4); /* BLUE */
+					LED_TurnOffLed(2); /* GREEN */
+					LED_TurnOnLed(3); /* ON YELLOW TX */
 						delay();
 						delay();
 						uint16_t received_byte_leght = 0;
@@ -448,9 +454,8 @@ void AppThread(uint32_t argument)
 						OSA_EventSet(mAppEvent, gAppEvtDummyEvent_c);
 				}
 
-			}
-
-			break;
+		}
+		break;
 
 		case stateConnected2:
 
@@ -458,7 +463,8 @@ void AppThread(uint32_t argument)
 		{
 			if(button_event == gKBD_EventSW4_c)    /* SW1 TRANSMITE MENSAJE TEXTO 2 */
 			{
-					LED_TurnOnLed(3); /* ON YELLOW TX */
+
+				LED_TurnOnLed(3); /* ON YELLOW TX */
 					delay();
 					delay();
 					uint16_t received_byte_leght = 0;
@@ -489,7 +495,6 @@ void AppThread(uint32_t argument)
 					OSA_EventSet(mAppEvent, gAppEvtDummyEvent_c);
 			}
 		}
-
 		break;
 
 		case stateConnected3:
@@ -529,7 +534,6 @@ void AppThread(uint32_t argument)
 					OSA_EventSet(mAppEvent, gAppEvtDummyEvent_c);
 			}
 		}
-
 		break;
 
 		case stateConnected4:
@@ -569,7 +573,6 @@ void AppThread(uint32_t argument)
 					OSA_EventSet(mAppEvent, gAppEvtDummyEvent_c);
 			}
 		}
-
 		break;
 
 		case stateConnected5:
@@ -609,7 +612,6 @@ void AppThread(uint32_t argument)
 					OSA_EventSet(mAppEvent, gAppEvtDummyEvent_c);
 			}
 		}
-
 		break;
 
 
@@ -650,7 +652,6 @@ void AppThread(uint32_t argument)
 					OSA_EventSet(mAppEvent, gAppEvtDummyEvent_c);
 			}
 		}
-
 		break;
 
 		case stateConnected7:
@@ -690,7 +691,6 @@ void AppThread(uint32_t argument)
 					OSA_EventSet(mAppEvent, gAppEvtDummyEvent_c);
 			}
 		}
-
 		break;
 
 		case stateConnected8:
@@ -730,13 +730,11 @@ void AppThread(uint32_t argument)
 					OSA_EventSet(mAppEvent, gAppEvtDummyEvent_c);
 			}
 		}
-
 		break;
 
 
 
-		} /* end switch*/
-
+	   } /* end switch*/
 	}
 }
 
