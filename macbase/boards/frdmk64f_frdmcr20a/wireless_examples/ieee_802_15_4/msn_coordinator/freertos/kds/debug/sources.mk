@@ -57,6 +57,7 @@ framework/Keyboard/Source \
 framework/GPIO/Source \
 framework/FunctionLib \
 framework/Flash/Internal \
+encintcomm \
 drivers \
 board \
 

@@ -35,7 +35,14 @@ enum
 {
 	stateInit,
 	waitConnectionResponse,
-	stateConnected
+	stateConnected,
+	stateConnected2,
+	stateConnected3,
+	stateConnected4,
+	stateConnected5,
+	stateConnected6,
+	stateConnected7,
+	stateConnected8
 };
 
 #define mDefaultValueOfDataLen_c               20
@@ -70,6 +77,31 @@ static void    App_HandleKeys(key_event_t events);
 void App_init( void );
 void AppThread (uint32_t argument);
 
+/*******************************************************************************
+ * other Prototypes JLGG
+ ******************************************************************************/
+/*!
+ * @brief delay.
+ */
+void delay(void);
+
+/*******************************************************************************
+ * Variables
+ ******************************************************************************/
+
+/*******************************************************************************
+ * Code JLGG
+ ******************************************************************************/
+void delay(void)
+{
+    volatile uint32_t i = 0;
+    for (i = 0; i < 990000; ++i)  /* ORIGINAL 800,000 */
+    {
+        __asm("NOP"); /* delay */
+    }
+}
+
+
 /************************************************************************************
  *************************************************************************************
  * Private memory declarations
@@ -95,6 +127,16 @@ static char received_data[128] = {0};
 static uint16_t received_data_src = 0xFFFF;
 static uint8_t received_data_len = 0;
 static uint8_t button_event = 0;
+
+const uint8_t Text_1_Array[] = {"NETA.FUNCIONA"};
+const uint8_t Text_2_Array[] = {"LA VELOCIDAD DE LA LUZ ES 299,792 KM/SEG"};
+const uint8_t Text_3_Array[] = {"QUIEN LLEGARA PRIMERO A MARTE LA NASA O SPACEX? "};
+const uint8_t Text_4_Array[] = {"QUIEN TENDRA LA GLORIA Y EL DINERO"};
+const uint8_t Text_5_Array[] = {"AVISTAN OVNI, LO PUBLICAN EN CBS"};
+const uint8_t Text_6_Array[] = {"POR PRIMERA VEZ, PENTAGONO Y U.S NAVY"};
+const uint8_t Text_7_Array[] = {"CONFIRMAN LA NOTICIA COMO VERDADERA"};
+const uint8_t Text_8_Array[] = {"ES REAL TIENEN DATOS RADAR Y FOTOS DE UFO"};
+
 
 uint8_t mac_address[8] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01};
 
@@ -239,6 +281,7 @@ void AppThread(uint32_t argument)
 	osaEventFlags_t ev;
 	/* Stores the error/success code returned by some functions. */
     static uint8_t mCounter = 0;
+    uint8_t status = 0;
 	while(1)
 	{
 		OSA_EventWait(mAppEvent, osaEventFlagsAll_c, FALSE, osaWaitForever_c, &ev);
@@ -296,13 +339,16 @@ void AppThread(uint32_t argument)
 
 				gState = stateConnected;
 				OSA_EventSet(mAppEvent, gAppEvtDummyEvent_c);
+				LED_TurnOnLed(1); /* RED */
+				LED_TurnOnLed(4); /* BLUE */
+				LED_TurnOnLed(2); /* RX/TX READY */
 			}
 
 			break;
 
 		case stateConnected:
 			/* Handle events from the UART */
-			if (ev & gAppEvtRxFromComm_c)
+			/*if (ev & gAppEvtRxFromComm_c)
 			{
 				uint16_t count;
 				unsigned char received_byte = 0;
@@ -316,7 +362,7 @@ void AppThread(uint32_t argument)
 					FLib_MemSet(maCommDataBuffer, 0, 64);
 					mCounter = 0;
 				}
-			}
+			} */
 
 			/* Handle MAC management events */
 			if(ev & gAppEvtMacManagement_c){
@@ -327,12 +373,29 @@ void AppThread(uint32_t argument)
 
 			/* Handle MAC data events */
 			if(ev & gAppEvtMacData_c){
-				if(received_data_len){
+				if(received_data_len)
+				{
 					Serial_Print(mInterfaceId,"Message from ", gAllowToBlock_d);
 					Serial_PrintHex(mInterfaceId,(uint8_t*)&received_data_src, 2, 0);
 					Serial_Print(mInterfaceId," : ", gAllowToBlock_d);
+					encintcomm_received(&received_data[0], &received_data_len, &status);
 					Serial_Print(mInterfaceId, received_data, gAllowToBlock_d);
 					Serial_Print(mInterfaceId,"\r\n", gAllowToBlock_d);
+					if (status && 0xFF )
+					{
+						if (status == 0x08)
+						{
+						Serial_Print(mInterfaceId,"CRC ERROR. NEW MESSAGE WILL BE SENT.\n\r", gAllowToBlock_d);
+						}
+						if (status == 0x80)
+						{
+						Serial_Print(mInterfaceId,"ENCRIPT ERROR. NEW MESSAGE WILL BE SENT.\n\r", gAllowToBlock_d);
+						}
+						if (status == 0x88)
+						{
+						Serial_Print(mInterfaceId,"CRC-ENCRIPT ERROR. NEW MESSAGE WILL BE SENT.\n\r", gAllowToBlock_d);
+						}
+					}
 				}
 				else {
 					Serial_Print(mInterfaceId,"Network data event: ", gAllowToBlock_d);
@@ -342,22 +405,134 @@ void AppThread(uint32_t argument)
 
 			}
 
-			/* Handle button events */
-			if(ev & gAppEvtButton_c){
-				if(button_event == gKBD_EventSW3_c) {
+			/* Handle button events */    /* SW2 DESTINATION  */
+			if(ev & gAppEvtButton_c)
+			{
+				if(button_event == gKBD_EventSW3_c)
+				{
 					Serial_Print(mInterfaceId,"Destination address: ", gAllowToBlock_d);
 					mDestinationAddress++;
 					Serial_PrintHex(mInterfaceId,(uint8_t*)&mDestinationAddress, 2, 0);
 					Serial_Print(mInterfaceId,"\r\n", gAllowToBlock_d);
 				}
-				if(button_event == gKBD_EventSW4_c) {
-					Serial_Print(mInterfaceId,"Destination address: ", gAllowToBlock_d);
-					mDestinationAddress--;
-					Serial_PrintHex(mInterfaceId,(uint8_t*)&mDestinationAddress, 2, 0);
-					Serial_Print(mInterfaceId,"\r\n", gAllowToBlock_d);
+				if(button_event == gKBD_EventSW4_c)    /* SW1 TRANSMITE MENSAJE TEXTO 1 */
+				{
+						LED_TurnOnLed(3); /* ON YELLOW TX */
+						delay();
+						delay();
+						uint16_t received_byte_leght = 0;
+						uint8_t * Array_to_send;
+						Array_to_send = 0;
+						uint8_t j = 0;
+						received_byte_leght = sizeof(Text_1_Array);
+						for ( j = 0 ; j < received_byte_leght;)
+						{
+							Array_to_send = &Text_1_Array[j];
+							maCommDataBuffer[mCounter++]  = *Array_to_send;
+							if ( mCounter >= 50 )
+							{
+								encintcomm_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+								j = received_byte_leght;
+							}
+							j++;
+						}
+						if ( mCounter < 50 )
+						{
+							encintcomm_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+						}
+						LED_TurnOffLed(3);   /* OFF YELLOW TX */
+						LED_TurnOnLed(2);   /* ON GREEN STATUS READY TX/RX  */
+						FLib_MemSet(maCommDataBuffer, 0, 64);
+						mCounter = 0;
+						gState = stateConnected2;
+						OSA_EventSet(mAppEvent, gAppEvtDummyEvent_c);
 				}
+
 			}
+
 			break;
+
+		case stateConnected2:
+
+		if(ev & gAppEvtButton_c)
+		{
+			if(button_event == gKBD_EventSW4_c)    /* SW1 TRANSMITE MENSAJE TEXTO 2 */
+			{
+					LED_TurnOnLed(3); /* ON YELLOW TX */
+					delay();
+					delay();
+					uint16_t received_byte_leght = 0;
+					uint8_t * Array_to_send;
+					Array_to_send = 0;
+					uint8_t j = 0;
+					received_byte_leght = sizeof(Text_2_Array);
+					for ( j = 0 ; j < received_byte_leght;)
+					{
+						Array_to_send = &Text_2_Array[j];
+						maCommDataBuffer[mCounter++]  = *Array_to_send;
+						if ( mCounter >= 50 )
+						{
+							encintcomm_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+							j = received_byte_leght;
+						}
+						j++;
+					}
+					if ( mCounter < 50 )
+					{
+						encintcomm_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+					}
+					LED_TurnOffLed(3);   /* OFF YELLOW TX */
+					LED_TurnOnLed(2);   /* ON GREEN STATUS READY TX/RX  */
+					FLib_MemSet(maCommDataBuffer, 0, 64);
+					mCounter = 0;
+					gState = stateConnected3;
+					OSA_EventSet(mAppEvent, gAppEvtDummyEvent_c);
+			}
+		}
+
+		break;
+
+		case stateConnected3:
+
+		if(ev & gAppEvtButton_c)
+		{
+			if(button_event == gKBD_EventSW4_c)    /* SW1 TRANSMITE MENSAJE TEXTO 3 */
+			{
+					LED_TurnOnLed(3); /* ON YELLOW TX */
+					delay();
+					delay();
+					uint16_t received_byte_leght = 0;
+					uint8_t * Array_to_send;
+					Array_to_send = 0;
+					uint8_t j = 0;
+					received_byte_leght = sizeof(Text_3_Array);
+					for ( j = 0 ; j < received_byte_leght;)
+					{
+						Array_to_send = &Text_3_Array[j];
+						maCommDataBuffer[mCounter++]  = *Array_to_send;
+						if ( mCounter >= 50 )
+						{
+							encintcomm_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+							j = received_byte_leght;
+						}
+						j++;
+					}
+					if ( mCounter < 50 )
+					{
+						encintcomm_transmit(mDestinationAddress, maCommDataBuffer, mCounter);
+					}
+					LED_TurnOffLed(3);   /* OFF YELLOW TX */
+					LED_TurnOnLed(2);   /* ON GREEN STATUS READY TX/RX  */
+					FLib_MemSet(maCommDataBuffer, 0, 64);
+					mCounter = 0;
+					gState = stateConnected;
+					OSA_EventSet(mAppEvent, gAppEvtDummyEvent_c);
+			}
+		}
+
+		break;
+
+
 		} /* end switch*/
 
 	}
