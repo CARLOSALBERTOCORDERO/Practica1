@@ -204,7 +204,22 @@ extern uint8_t encintcomm_transmit(uint16_t dest_address, uint8_t* data, uint8_t
     return returnVal;
 }
 
-
+/*FUNCTION**********************************************************************
+ *
+ * Function Name : mac_transmit
+ * Description   : This function calculates de CRC of the message received to
+ *                 check any error in the communication, then it decipher the
+ *                 message using AES128. Finally, the data is loaded, the
+ *                 data_len adjusted and the status reported.
+ *
+ *
+ * Params: data - Pointer to the data received.
+ *         data_len - Pointer to the length of the date received.
+ *         status - Out value of the status.
+ *
+ * Return: int: 0 - success.
+ *
+ *END**************************************************************************/
 extern uint8_t encintcomm_received( uint8_t* data, uint8_t * data_len, uint8_t * status)
 {
     uint8_t returnVal = 0u;
